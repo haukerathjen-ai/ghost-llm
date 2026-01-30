@@ -1,0 +1,37 @@
+{
+  "name": "ghost-llm",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/desktop",
+    "apps/electron",
+    "shared"
+  ],
+  "scripts": {
+    "dev:desktop": "npm run dev --workspace=apps/desktop",
+    "dev:electron": "node launcher.js",
+    "dev": "concurrently \"npm run dev:desktop\" \"npm run dev:electron\"",
+    "build": "npm run build --workspace=apps/desktop && npm run build --workspace=apps/electron",
+    "build:desktop": "npm run build --workspace=apps/desktop",
+    "build:electron": "npm run build --workspace=apps/electron",
+    "start": "npm run build:desktop && electron -r ts-node/register apps/electron/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "concurrently": "^8.2.2",
+    "electron": "28.2.0",
+    "electron-builder": "^24.9.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.3"
+  },
+  "description": "Ghost LLM - Desktop Application",
+  "keywords": [
+    "electron",
+    "nextjs",
+    "llm",
+    "desktop"
+  ],
+  "author": "",
+  "license": "ISC"
+}
