@@ -1,0 +1,48 @@
+```json
+{
+  "name": "desktop-ai-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/desktop",
+    "apps/electron"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:desktop\" \"npm run dev:electron\"",
+    "dev:desktop": "cd apps/desktop && npm run dev",
+    "dev:electron": "cd apps/electron && npm run dev",
+    "build": "npm run build:desktop && npm run build:electron",
+    "build:desktop": "cd apps/desktop && npm run build",
+    "build:electron": "cd apps/electron && npm run build",
+    "electron": "cd apps/electron && npm start",
+    "electron:build": "cd apps/electron && npm run dist"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0",
+    "typescript": "^5.0.0",
+    "tailwindcss": "^3.0.0",
+    "@anthropic-ai/sdk": "^0.10.0",
+    "openai": "^4.0.0",
+    "@nut-tree/nut-js": "^3.0.0",
+    "electron-store": "^8.0.0",
+    "zustand": "^4.0.0",
+    "lucide-react": "^0.294.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "concurrently": "^8.0.0",
+    "wait-on": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
+```
