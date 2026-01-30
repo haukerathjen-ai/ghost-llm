@@ -1,0 +1,81 @@
+```json
+{
+  "appId": "com.ghostllm.app",
+  "productName": "Ghost LLM",
+  "directories": {
+    "output": "dist",
+    "buildResources": "build"
+  },
+  "files": [
+    "apps/electron/**/*",
+    "apps/desktop/.next/**/*",
+    "shared/**/*",
+    "!**/*.ts",
+    "!**/*.map",
+    "!**/*.md"
+  ],
+  "extraResources": [
+    {
+      "from": "node_modules/@nut-tree",
+      "to": "node_modules/@nut-tree",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "node_modules/node-record-lpcm16",
+      "to": "node_modules/node-record-lpcm16",
+      "filter": ["**/*"]
+    }
+  ],
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": "universal"
+      }
+    ],
+    "category": "public.app-category.productivity",
+    "icon": "build/icon.icns",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist"
+  },
+  "dmg": {
+    "contents": [
+      {
+        "x": 130,
+        "y": 220
+      },
+      {
+        "x": 410,
+        "y": 220,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ],
+    "window": {
+      "width": 540,
+      "height": 380
+    }
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64", "ia32"]
+      }
+    ],
+    "icon": "build/icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "installerIcon": "build/icon.ico",
+    "uninstallerIcon": "build/icon.ico"
+  },
+  "asar": true,
+  "compression": "normal"
+}
+```
