@@ -1,4 +1,6 @@
-```tsx
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import React from 'react';
 import { TranscriptionRecord } from '../types';
 
@@ -251,4 +253,3 @@ export const HistoryList: React.FC<HistoryListProps> = ({
     </div>
   );
 };
-```

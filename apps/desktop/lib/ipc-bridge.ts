@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 // apps/desktop/lib/ipc-bridge.ts
 
 /**
@@ -242,4 +244,3 @@ export const app = {
   getPath: (name: string) => invokeGhost('app:getPath', name),
   quit: () => invokeGhost('app:quit'),
 };
-```

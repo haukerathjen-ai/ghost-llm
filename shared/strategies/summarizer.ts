@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 // shared/strategies/summarizer.ts
 
 export const SUMMARIZER_STRATEGY = {
@@ -25,4 +27,3 @@ ${text}
 
 ZUSAMMENFASSUNG:`;
 }
-```

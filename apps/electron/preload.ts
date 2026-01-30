@@ -1,11 +1,13 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import { contextBridge, ipcRenderer } from 'electron';
-import type { 
-  RecordingStatus, 
-  TranscriptionResult, 
-  HistoryEntry, 
+import type {
+  RecordingStatus,
+  TranscriptionResult,
+  HistoryEntry,
   Strategy,
-  AppSettings 
+  AppSettings
 } from '@shared/types';
 
 // Define the API interface that will be exposed to the renderer
@@ -90,5 +92,3 @@ declare global {
     ghostAPI: GhostAPI;
   }
 }
-
-```

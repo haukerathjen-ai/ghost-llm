@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm config:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

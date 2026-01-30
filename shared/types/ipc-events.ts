@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 // Type definitions for all IPC events
 
 /**
@@ -150,4 +152,3 @@ export function isEventChannel(channel: string): channel is EventChannel {
     IPCChannels.ERROR,
   ].includes(channel);
 }
-```

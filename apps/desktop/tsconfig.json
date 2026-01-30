@@ -1,4 +1,3 @@
-```json
 {
   "extends": "next/core-web-vitals",
   "compilerOptions": {
@@ -13,4 +12,3 @@
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
 }
-```

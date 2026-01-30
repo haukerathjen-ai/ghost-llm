@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 // shared/strategies/formatter.ts
 
 export const FORMATTER_STRATEGY = {
@@ -25,4 +27,3 @@ Gib NUR den bereinigten und formatierten Text zurück, ohne zusätzliche Komment
 TEXT:
 ${text}`;
 }
-```

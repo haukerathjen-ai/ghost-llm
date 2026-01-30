@@ -1,4 +1,6 @@
-```tsx
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import React from 'react';
 import { Circle, Loader2, Check } from 'lucide-react';
 
@@ -102,4 +104,3 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status }) => {
 };
 
 export default StatusIndicator;
-```

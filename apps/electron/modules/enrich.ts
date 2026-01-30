@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import Anthropic from '@anthropic-ai/sdk';
 import { strategies } from '@shared/strategies';
 
@@ -83,4 +85,3 @@ function buildPrompt(template: string, userText: string): string {
   // Otherwise append user text to template
   return `${template}\n\n${userText}`;
 }
-```

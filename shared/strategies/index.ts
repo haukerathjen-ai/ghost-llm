@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 // shared/strategies/index.ts
 
 import { formatterStrategy } from './formatter';
@@ -47,4 +49,3 @@ export { formatterStrategy } from './formatter';
 export { extractorStrategy } from './extractor';
 export { converterStrategy } from './converter';
 export { validatorStrategy } from './validator';
-```

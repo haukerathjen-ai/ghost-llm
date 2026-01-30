@@ -1,4 +1,6 @@
-```tsx
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import React from 'react';
 import { FileText, Code, ListCollapse, ChevronDown } from 'lucide-react';
 import { ghostAPI } from '../lib/ghostAPI';
@@ -151,4 +153,3 @@ export const StrategySelector: React.FC<StrategySelectorProps> = ({
     </div>
   );
 };
-```

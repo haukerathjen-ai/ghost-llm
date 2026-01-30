@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import { EventEmitter } from 'events';
 import * as recorder from 'node-record-lpcm16';
 import { Readable } from 'stream';
@@ -208,4 +210,3 @@ export class AudioRecorder extends EventEmitter {
     return { ...this.config };
   }
 }
-```

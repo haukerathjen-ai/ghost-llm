@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import path from 'path';
 import { RecordingModule } from './modules/recording';
@@ -174,5 +176,3 @@ app.on('before-quit', () => {
     recordingModule.stopRecording();
   }
 });
-
-```

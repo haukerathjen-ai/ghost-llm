@@ -1,4 +1,3 @@
-```json
 {
   "appId": "com.ghostllm.app",
   "productName": "Ghost LLM",
@@ -15,11 +14,6 @@
     "!**/*.md"
   ],
   "extraResources": [
-    {
-      "from": "node_modules/@nut-tree",
-      "to": "node_modules/@nut-tree",
-      "filter": ["**/*"]
-    },
     {
       "from": "node_modules/node-record-lpcm16",
       "to": "node_modules/node-record-lpcm16",
@@ -78,4 +72,3 @@
   "asar": true,
   "compression": "normal"
 }
-```

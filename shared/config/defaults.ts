@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 // shared/config/defaults.ts
 
 export interface AppSettings {
@@ -29,5 +31,3 @@ export const API_CONFIG = {
 } as const;
 
 export const TYPING_DELAY_BEFORE_START = 500;
-
-```

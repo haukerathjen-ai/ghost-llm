@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import Store from 'electron-store';
 import { defaultSettings } from '@shared/config/defaults';
 
@@ -118,4 +120,3 @@ export class AppStore {
 
 // Export singleton instance
 export const appStore = new AppStore();
-```

@@ -1,4 +1,6 @@
-```typescript
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import OpenAI from 'openai';
 import { promises as fs } from 'fs';
 import { join } from 'path';
@@ -91,4 +93,3 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-```

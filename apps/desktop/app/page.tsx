@@ -1,4 +1,6 @@
-```tsx
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Licensed under the GNU General Public License v3.0
+
 import Link from 'next/link';
 import { Settings, Clock, Activity } from 'lucide-react';
 import { useElectronIPC } from '@/hooks/useElectronIPC';
@@ -133,4 +135,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-```
