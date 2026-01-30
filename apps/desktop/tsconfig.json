@@ -1,0 +1,16 @@
+```json
+{
+  "extends": "next/core-web-vitals",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared/*": ["../../shared/*"],
+      "@components/*": ["./components/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
+}
+```
