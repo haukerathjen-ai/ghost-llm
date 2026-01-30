@@ -1,0 +1,33 @@
+```yml
+appId: com.ghostllm.app
+productName: Ghost LLM
+directories:
+  output: dist
+files:
+  - apps/desktop/out
+  - apps/electron/dist
+publish: never
+
+mac:
+  target:
+    - dmg
+  category: public.app-category.productivity
+
+dmg:
+  title: ${productName}
+  icon: null
+
+win:
+  target:
+    - nsis
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+linux:
+  target:
+    - AppImage
+  category: Utility
+
+```
