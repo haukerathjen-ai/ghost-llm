@@ -1,0 +1,127 @@
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Glass Card Effect */
+  .glass-card {
+    @apply backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-white/10 rounded-lg shadow-xl;
+  }
+
+  /* Primary Button with Ghost Purple Gradient */
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-semibold text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #9333ea 0%, #6d28d9 50%, #4f46e5 100%);
+  }
+
+  .btn-primary:active {
+    @apply scale-95;
+  }
+}
+
+@layer utilities {
+  /* Recording Pulse Animation */
+  .recording-pulse {
+    @apply relative;
+    animation: pulse-recording 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-recording {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+
+  .recording-pulse::before {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-red-500;
+    animation: ping-recording 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes ping-recording {
+    75%, 100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+}
+
+/* Custom Scrollbar Styling for Dark Theme */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-900;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-700;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-600;
+}
+
+::-webkit-scrollbar-thumb:active {
+  @apply bg-gray-500 dark:bg-gray-500;
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(107 114 128) rgb(17 24 39);
+}
+
+/* Selection Color Matching Ghost Purple */
+::selection {
+  @apply bg-purple-500/30 text-purple-100;
+}
+
+::-moz-selection {
+  @apply bg-purple-500/30 text-purple-100;
+}
+
+/* Dark theme selection */
+.dark ::selection {
+  @apply bg-purple-600/40 text-purple-50;
+}
+
+.dark ::-moz-selection {
+  @apply bg-purple-600/40 text-purple-50;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus Visible Styling */
+*:focus-visible {
+  @apply outline-none ring-2 ring-purple-500 ring-offset-2 ring-offset-background;
+}
