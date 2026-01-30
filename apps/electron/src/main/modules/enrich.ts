@@ -68,6 +68,102 @@ export async function enrichText(
 }
 
 /**
+ * Enriches text using Claude Vision API with screenshot context
+ * @param text - The transcribed text from user
+ * @param screenshotBase64 - Base64-encoded PNG screenshot
+ * @param strategyId - The ID of the strategy to use
+ * @returns Promise<string> - The enriched text
+ */
+export async function enrichTextWithVision(
+  text: string,
+  screenshotBase64: string,
+  strategyId: string
+): Promise<string> {
+  try {
+    console.log(`[Enrich] Starting vision enrichment with strategy: ${strategyId}`);
+
+    // Get the base prompt for the strategy
+    const basePrompt = getPromptForStrategy(strategyId, text);
+
+    if (!basePrompt) {
+      throw new Error(`Strategy with id "${strategyId}" not found`);
+    }
+
+    // Create vision-enhanced system prompt
+    const visionPrompt = `You are Ghost LLM, an AI assistant that analyzes both voice input and screen context.
+
+SCREEN ANALYSIS:
+Analyze the provided screenshot to understand the user's current context:
+- If you see code with errors, help fix them
+- If you see an email draft, help improve it
+- If you see a document, help edit or enhance it
+- If you see a form, help fill it appropriately
+
+USER REQUEST (transcribed from voice):
+${text}
+
+STRATEGY: ${strategyId}
+${basePrompt}
+
+IMPORTANT:
+- Respond ONLY with the text/code that should be typed into the application
+- Do NOT include explanations, markdown formatting, or meta-commentary
+- The output will be directly typed character-by-character into the active window
+- Be context-aware based on the screenshot`;
+
+    console.log(`[Enrich] Sending request to Claude Vision API`);
+    
+    // Call Claude Vision API with image
+    const response = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 4096,
+      temperature: 0.3,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: 'image/png',
+                data: screenshotBase64,
+              },
+            },
+            {
+              type: 'text',
+              text: visionPrompt,
+            },
+          ],
+        },
+      ],
+    });
+
+    // Extract the enriched text from response
+    const enrichedText = response.content
+      .filter((block) => block.type === 'text')
+      .map((block) => (block as Anthropic.TextBlock).text)
+      .join('\n');
+
+    console.log(`[Enrich] Successfully enriched with vision (${enrichedText.length} chars)`);
+    
+    return enrichedText;
+  } catch (error) {
+    console.error('[Enrich] Error during vision enrichment:', error);
+    
+    if (error instanceof Anthropic.APIError) {
+      throw new Error(
+        `Claude Vision API Error (${error.status}): ${error.message}`
+      );
+    }
+    
+    throw new Error(
+      `Failed to enrich with vision: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
  * Builds the complete prompt by combining strategy template and user text
  * @param template - The strategy template
  * @param userText - The user's input text

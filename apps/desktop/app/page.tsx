@@ -54,6 +54,24 @@ export default function DashboardPage() {
               <RecordingButton />
             </div>
 
+            {/* Hardware Test Card */}
+            <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-8 shadow-2xl hover:bg-white/10 transition-all duration-300">
+              <h3 className="text-sm font-medium text-white/60 mb-4">Hardware Bridge Test</h3>
+              <button
+                onClick={() => {
+                  if (window.ghostAPI?.send) {
+                    window.ghostAPI.send('ghost:debug-typing');
+                  }
+                }}
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg shadow-purple-500/50"
+              >
+                Test Ghost Typing
+              </button>
+              <p className="text-xs text-white/40 mt-3 text-center">
+                Opens Notepad and types test message after 3 seconds
+              </p>
+            </div>
+
             {/* Current Strategy Card */}
             <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 shadow-2xl hover:bg-white/10 transition-all duration-300">
               <h3 className="text-sm font-medium text-white/60 mb-2">Active Strategy</h3>

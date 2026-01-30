@@ -12,6 +12,7 @@ import type {
 
 // Define the API interface that will be exposed to the renderer
 export interface GhostAPI {
+  send: (channel: string, ...args: any[]) => void;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   onRecordingStatus: (callback: (status: RecordingStatus) => void) => () => void;
@@ -24,6 +25,11 @@ export interface GhostAPI {
 
 // Expose the API to the renderer process
 const ghostAPI: GhostAPI = {
+  // Send one-way IPC message to main process
+  send: (channel: string, ...args: any[]): void => {
+    ipcRenderer.send(channel, ...args);
+  },
+
   // Start recording audio
   startRecording: async (): Promise<void> => {
     return ipcRenderer.invoke('recording:start');
