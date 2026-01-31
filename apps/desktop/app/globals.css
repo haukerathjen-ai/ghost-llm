@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom Scrollbar Styling - Minimalist */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f1f1f;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2a2a;
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1f1f1f #0a0a0a;
+}
+
+/* Selection Color - Simple */
+::selection {
+  background: #333333;
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background: #333333;
+  color: #ffffff;
+}
+
+/* Focus Visible Styling - Simple */
+*:focus-visible {
+  outline: 1px solid #444444;
+  outline-offset: 2px;
+}
