@@ -112,7 +112,7 @@ export class GhostTyper {
 
     // Split text into chunks to avoid command length limits
     // Be careful not to split in the middle of a {KEY} sequence
-    const chunks = this.splitIntoSendKeysChunks(escapedText, 35);
+    const chunks = this.splitIntoSendKeysChunks(escapedText, 80);
 
     console.log(`[GhostTyper] Split into ${chunks.length} chunks`);
 
@@ -130,7 +130,7 @@ export class GhostTyper {
         });
         
         // Small delay between chunks
-        await this.delay(30);
+        await this.delay(10);
       } catch (error) {
         console.error(`[GhostTyper] Error typing chunk ${i + 1}:`, error);
         throw error;

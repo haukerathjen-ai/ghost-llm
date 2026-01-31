@@ -124,16 +124,10 @@ export default function DashboardPage() {
 
         {/* Activity Log */}
         <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div style={{ marginBottom: '16px' }}>
             <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8' }}>
               Aktivitäts-Log
             </h2>
-            <Link 
-              href="/history"
-              style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'none' }}
-            >
-              Alle anzeigen
-            </Link>
           </div>
           
           {/* Activity List - Show last 5 entries, newest first */}

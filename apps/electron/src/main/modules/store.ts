@@ -116,7 +116,24 @@ export class AppStore {
   getAll(): StoreSchema {
     return this.store.store;
   }
+
+  // Generic getter/setter for any key
+  get<K extends keyof StoreSchema>(key: K): StoreSchema[K];
+  get<T = any>(key: string, defaultValue?: T): T;
+  get(key: string, defaultValue?: any): any {
+    return this.store.get(key as any, defaultValue);
+  }
+
+  set<K extends keyof StoreSchema>(key: K, value: StoreSchema[K]): void;
+  set(key: string, value: any): void {
+    this.store.set(key as any, value);
+  }
 }
 
 // Export singleton instance
 export const appStore = new AppStore();
+
+// Export convenience function to get store instance
+export function getStore(): AppStore {
+  return appStore;
+}

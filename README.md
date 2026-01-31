@@ -18,7 +18,8 @@ Ghost LLM represents a groundbreaking experiment in human-AI collaboration. **10
 
 ### 🎙️ **Voice-to-Action**
 - High-quality audio capture using SoX audio engine
-- Real-time transcription powered by OpenAI Whisper
+- **Local Whisper Large-v3** with GPU acceleration (CUDA)
+- **Automatic Cloud Fallback** when GPU is unavailable
 - Support for multiple languages (optimized for German)
 - Hotkey-activated recording (Ctrl+Shift+G / Ctrl+Alt+G / F9)
 
@@ -168,7 +169,7 @@ If recording produces silence or "Amara.org" hallucinations:
 
 3. **Test in Windows Voice Recorder** first to verify microphone works
 
-See [AUDIO_TROUBLESHOOTING.md](AUDIO_TROUBLESHOOTING.md) for detailed debugging steps.
+For GPU setup and CUDA troubleshooting, see [SETUP_CUDA_GPU.md](SETUP_CUDA_GPU.md).
 
 ---
 

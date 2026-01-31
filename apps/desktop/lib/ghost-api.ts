@@ -9,6 +9,9 @@ interface SettingsData {
   typingSpeed: number;
   beepVolume: number;
   theme: 'dark' | 'darker';
+  transcriptionMode?: 'local' | 'cloud' | 'auto';
+  localWhisperModel?: 'tiny' | 'base' | 'small' | 'medium' | 'large';
+  whisperCpuThreads?: number;
 }
 
 interface APIKeyStatus {
@@ -16,46 +19,29 @@ interface APIKeyStatus {
   anthropic: boolean;
 }
 
+interface LocalTranscriptionCapabilities {
+  pythonAvailable: boolean;
+  pythonVersion?: string;
+  whisperInstalled: boolean;
+  gpuAvailable?: boolean;
+  gpuName?: string;
+}
+
 interface GhostAPIClient {
   loadSettings: () => Promise<SettingsData | null>;
   saveSettings: (settings: SettingsData) => Promise<void>;
   checkAPIKeys: () => Promise<APIKeyStatus>;
+  getLocalTranscriptionCapabilities: () => Promise<LocalTranscriptionCapabilities>;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   setStrategy: (strategyId: string) => Promise<void>;
   getHistory: () => Promise<any[]>;
-}
-
-// Window API interface
-interface WindowGhostAPI {
-  // Recording
-  startRecording: () => Promise<void>;
-  stopRecording: () => Promise<void>;
-  onRecordingStatus: (callback: (status: any) => void) => void;
-  onTranscriptionComplete: (callback: (result: any) => void) => void;
-  
-  // Settings
-  getSettings: () => Promise<any>;
-  saveSettings: (settings: any) => Promise<void>;
-  
-  // Strategy
-  setStrategy: (strategyId: string) => Promise<void>;
-  
-  // History
-  getHistory: () => Promise<any[]>;
-  
-  // System checks
-  checkSoxAvailable: () => Promise<boolean>;
-  checkAPIKeys: () => Promise<{ openai: boolean; anthropic: boolean }>;
-  
-  // Listener cleanup
-  removeListener?: (event: string, callback: Function) => void;
 }
 
 // Get window API safely
-function getWindowAPI(): WindowGhostAPI | undefined {
+function getWindowAPI() {
   if (typeof window !== 'undefined') {
-    return (window as any).ghostAPI as WindowGhostAPI | undefined;
+    return window.ghostAPI;
   }
   return undefined;
 }
@@ -199,6 +185,31 @@ export const ghostAPI: GhostAPIClient = {
     // Fallback for browser mode
     console.warn('[GhostAPI] API key check not available in browser mode');
     return { openai: false, anthropic: false };
+  },
+
+  /**
+   * Get local transcription capabilities (Python, faster-whisper, GPU)
+   */
+  getLocalTranscriptionCapabilities: async (): Promise<LocalTranscriptionCapabilities> => {
+    const api = getWindowAPI();
+    if (api?.getLocalTranscriptionCapabilities) {
+      try {
+        return await api.getLocalTranscriptionCapabilities();
+      } catch (error) {
+        console.error('[GhostAPI] Failed to check local capabilities:', error);
+        return {
+          pythonAvailable: false,
+          whisperInstalled: false,
+        };
+      }
+    }
+    
+    // Fallback for browser mode
+    console.warn('[GhostAPI] Local capabilities check not available in browser mode');
+    return {
+      pythonAvailable: false,
+      whisperInstalled: false,
+    };
   },
 };
 

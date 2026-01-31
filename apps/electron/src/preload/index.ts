@@ -25,6 +25,13 @@ export interface GhostAPI {
   saveSettings: (settings: AppSettings) => Promise<void>;
   checkSoxAvailable: () => Promise<boolean>;
   checkAPIKeys: () => Promise<{ openai: boolean; anthropic: boolean }>;
+  getLocalTranscriptionCapabilities: () => Promise<{
+    pythonAvailable: boolean;
+    pythonVersion?: string;
+    whisperInstalled: boolean;
+    gpuAvailable?: boolean;
+    gpuName?: string;
+  }>;
 }
 
 // Expose the API to the renderer process
@@ -114,6 +121,17 @@ const ghostAPI: GhostAPI = {
   // Check API keys status
   checkAPIKeys: async (): Promise<{ openai: boolean; anthropic: boolean }> => {
     return ipcRenderer.invoke('system:check-api-keys');
+  },
+
+  // Check local transcription capabilities
+  getLocalTranscriptionCapabilities: async (): Promise<{
+    pythonAvailable: boolean;
+    pythonVersion?: string;
+    whisperInstalled: boolean;
+    gpuAvailable?: boolean;
+    gpuName?: string;
+  }> => {
+    return ipcRenderer.invoke('transcription:check-local-capabilities');
   },
 };
 

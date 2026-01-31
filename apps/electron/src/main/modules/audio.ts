@@ -30,7 +30,7 @@ export class AudioRecorder extends EventEmitter {
   constructor() {
     super();
     this.config = {
-      sampleRate: 16000,
+      sampleRate: 16000, // Optimal for Whisper (native training rate)
       channels: 1,
       bitwidth: 16,
     };
@@ -211,7 +211,7 @@ Write-Output "Default Device: $([AudioDeviceInfo]::GetDefaultDevice())"
     
     try {
       const micInstance = mic({
-        rate: '16000',
+        rate: '16000', // Optimal for Whisper API
         channels: '1',
         exitOnSilence: 0,
         fileType: 'wav',

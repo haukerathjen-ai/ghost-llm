@@ -7,9 +7,8 @@ import { useEffect, useState, useCallback } from 'react';
 import type {
   RecordingStatus,
   TranscriptionResult,
-  TranscriptionHistory,
-  UserSettings,
-  TranscriptionStrategy,
+  HistoryEntry,
+  AppSettings,
   ActivityLogEntry,
 } from '@shared/types';
 
@@ -17,14 +16,14 @@ interface UseElectronIPCReturn {
   isRecording: boolean;
   status: RecordingStatus | null;
   currentTranscription: TranscriptionResult | null;
-  history: TranscriptionHistory[];
-  historyPreview: TranscriptionHistory[];
-  settings: UserSettings | null;
+  history: HistoryEntry[];
+  historyPreview: HistoryEntry[];
+  settings: AppSettings | null;
   strategy: string | null;
   activityLog: ActivityLogEntry[];
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
-  setStrategy: (strategy: TranscriptionStrategy) => Promise<void>;
+  setStrategy: (strategy: string) => Promise<void>;
   refreshHistory: () => Promise<void>;
 }
 
@@ -32,8 +31,8 @@ export function useElectronIPC(): UseElectronIPCReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [status, setStatus] = useState<RecordingStatus | null>(null);
   const [currentTranscription, setCurrentTranscription] = useState<TranscriptionResult | null>(null);
-  const [history, setHistory] = useState<TranscriptionHistory[]>([]);
-  const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [settings, setSettings] = useState<AppSettings | null>(null);
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
 
   // Check if Electron API is available
@@ -68,22 +67,19 @@ export function useElectronIPC(): UseElectronIPCReturn {
       });
     };
 
-    // Subscribe to events
-    window.ghostAPI.onRecordingStatus(handleRecordingStatus);
-    window.ghostAPI.onTranscriptionComplete(handleTranscriptionComplete);
-    window.ghostAPI.onActivityLog(handleActivityLog);
+    // Subscribe to events and store cleanup functions
+    const cleanupRecordingStatus = window.ghostAPI.onRecordingStatus(handleRecordingStatus);
+    const cleanupTranscriptionComplete = window.ghostAPI.onTranscriptionComplete(handleTranscriptionComplete);
+    const cleanupActivityLog = window.ghostAPI.onActivityLog(handleActivityLog);
 
     // Load initial data
     loadInitialData();
 
     // Cleanup listeners on unmount
     return () => {
-      // Note: Actual cleanup would depend on how IPC listeners are implemented
-      // This is a placeholder for the cleanup pattern
-      if (window.ghostAPI.removeListener) {
-        window.ghostAPI.removeListener('recordingStatus', handleRecordingStatus);
-        window.ghostAPI.removeListener('transcriptionComplete', handleTranscriptionComplete);
-      }
+      cleanupRecordingStatus();
+      cleanupTranscriptionComplete();
+      cleanupActivityLog();
     };
   }, [isElectronAvailable]);
 
@@ -137,7 +133,7 @@ export function useElectronIPC(): UseElectronIPCReturn {
 
   // Set transcription strategy
   const setStrategy = useCallback(
-    async (strategy: TranscriptionStrategy) => {
+    async (strategy: string) => {
       if (!isElectronAvailable) {
         console.error('Cannot set strategy: Electron API not available');
         return;
@@ -145,7 +141,7 @@ export function useElectronIPC(): UseElectronIPCReturn {
 
       try {
         await window.ghostAPI.setStrategy(strategy);
-        setSettings((prev) => (prev ? { ...prev, strategy } : null));
+        // Strategy is managed in Electron store, not part of AppSettings
       } catch (error) {
         console.error('Failed to set strategy:', error);
       }
@@ -175,7 +171,7 @@ export function useElectronIPC(): UseElectronIPCReturn {
     history,
     historyPreview: history,
     settings,
-    strategy: settings?.strategy || null,
+    strategy: null, // Strategy is managed separately, not part of AppSettings
     activityLog,
     startRecording,
     stopRecording,

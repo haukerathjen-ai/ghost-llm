@@ -11,11 +11,22 @@ interface SettingsForm {
   typingSpeed: number;
   beepVolume: number;
   theme: "dark" | "darker";
+  transcriptionMode: "local" | "cloud" | "auto";
+  localWhisperModel: "tiny" | "base" | "small" | "medium" | "large";
+  whisperCpuThreads: number;
 }
 
 interface APIKeyStatus {
   openai: boolean;
   anthropic: boolean;
+}
+
+interface LocalTranscriptionCapabilities {
+  pythonAvailable: boolean;
+  pythonVersion?: string;
+  whisperInstalled: boolean;
+  gpuAvailable?: boolean;
+  gpuName?: string;
 }
 
 export default function SettingsPage() {
@@ -24,24 +35,37 @@ export default function SettingsPage() {
     typingSpeed: 50,
     beepVolume: 75,
     theme: "dark",
+    transcriptionMode: "auto",
+    localWhisperModel: "medium",
+    whisperCpuThreads: 8,
   });
   const [apiKeyStatus, setApiKeyStatus] = useState<APIKeyStatus>({
     openai: false,
     anthropic: false,
   });
+  const [localCapabilities, setLocalCapabilities] = useState<LocalTranscriptionCapabilities | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCheckingCapabilities, setIsCheckingCapabilities] = useState(false);
 
   useEffect(() => {
     loadSettings();
     checkAPIKeys();
+    checkLocalCapabilities();
   }, []);
 
   const loadSettings = async () => {
     try {
       const settings = await ghostAPI.loadSettings();
       if (settings) {
-        setFormData(settings);
+        setFormData({
+          typingSpeed: settings.typingSpeed,
+          beepVolume: settings.beepVolume,
+          theme: settings.theme,
+          transcriptionMode: settings.transcriptionMode || 'auto',
+          localWhisperModel: settings.localWhisperModel || 'medium',
+          whisperCpuThreads: settings.whisperCpuThreads || 8,
+        });
       }
     } catch (error) {
       console.error("Failed to load settings:", error);
@@ -56,6 +80,18 @@ export default function SettingsPage() {
       setApiKeyStatus(status);
     } catch (error) {
       console.error("Failed to check API keys:", error);
+    }
+  };
+
+  const checkLocalCapabilities = async () => {
+    setIsCheckingCapabilities(true);
+    try {
+      const capabilities = await ghostAPI.getLocalTranscriptionCapabilities();
+      setLocalCapabilities(capabilities);
+    } catch (error) {
+      console.error("Failed to check local capabilities:", error);
+    } finally {
+      setIsCheckingCapabilities(false);
     }
   };
 
@@ -218,6 +254,154 @@ export default function SettingsPage() {
                 <span>Langsam (200ms)</span>
               </div>
             </div>
+          </div>
+
+          {/* Transcription Mode */}
+          <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8' }}>
+                Transkription
+              </h2>
+              <span style={{ 
+                fontSize: '14px', 
+                padding: '4px 12px', 
+                backgroundColor: '#3b82f620', 
+                color: '#60a5fa', 
+                border: '1px solid #3b82f6',
+                borderRadius: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                fontWeight: '500'
+              }}>
+                Vorschau
+              </span>
+            </div>
+            
+            {/* System Status */}
+            {isCheckingCapabilities ? (
+              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>
+                Prüfe System-Voraussetzungen...
+              </div>
+            ) : localCapabilities && (
+              <div style={{ marginBottom: '16px', backgroundColor: '#0a0a0a', border: '1px solid #1e293b', padding: '12px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '500', color: '#94a3b8', marginBottom: '8px' }}>
+                  🔍 System-Status
+                </div>
+                <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{localCapabilities.pythonAvailable ? '✅' : '❌'}</span>
+                    <span>Python {localCapabilities.pythonAvailable ? `(${localCapabilities.pythonVersion})` : 'nicht installiert'}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{localCapabilities.whisperInstalled ? '✅' : '❌'}</span>
+                    <span>faster-whisper {localCapabilities.whisperInstalled ? 'installiert' : 'nicht installiert'}</span>
+                  </div>
+                  {localCapabilities.whisperInstalled && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>{localCapabilities.gpuAvailable ? '🚀' : '💻'}</span>
+                      <span>{localCapabilities.gpuAvailable ? `GPU: ${localCapabilities.gpuName}` : 'GPU: Nicht verfügbar (CPU-Modus)'}</span>
+                    </div>
+                  )}
+                </div>
+                {!localCapabilities.pythonAvailable && (
+                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#fca5a5' }}>
+                    ⚠️ Python 3.8+ wird benötigt für lokale Transkription
+                  </div>
+                )}
+                {localCapabilities.pythonAvailable && !localCapabilities.whisperInstalled && (
+                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#fca5a5' }}>
+                    ⚠️ Führe aus: pip install faster-whisper
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mode Selection */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', color: '#ffffff', marginBottom: '8px', display: 'block' }}>
+                Transkriptions-Modus
+              </label>
+              <select
+                value={formData.transcriptionMode}
+                onChange={(e) => handleInputChange("transcriptionMode", e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#0a0a0a',
+                  color: '#ffffff',
+                  border: '1px solid #1e293b',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="auto">🔄 Auto (Lokal → Cloud Fallback)</option>
+                <option value="local">💻 Nur Lokal (faster-whisper)</option>
+                <option value="cloud">☁️ Nur Cloud (OpenAI API)</option>
+              </select>
+              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                {formData.transcriptionMode === 'auto' && 'Versucht zuerst lokale Transkription, fällt bei Fehler auf Cloud zurück'}
+                {formData.transcriptionMode === 'local' && 'Offline-Modus: Funktioniert ohne Internet, benötigt Python + faster-whisper'}
+                {formData.transcriptionMode === 'cloud' && 'Online-Modus: Nutzt OpenAI API (benötigt API-Key)'}
+              </div>
+            </div>
+
+            {/* Model Selection (only if local or auto) */}
+            {(formData.transcriptionMode === 'local' || formData.transcriptionMode === 'auto') && (
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '14px', color: '#ffffff', marginBottom: '8px', display: 'block' }}>
+                  Lokales Modell
+                </label>
+                <select
+                  value={formData.localWhisperModel}
+                  onChange={(e) => handleInputChange("localWhisperModel", e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: '#0a0a0a',
+                    color: '#ffffff',
+                    border: '1px solid #1e293b',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="tiny">Tiny (~75MB) - Sehr schnell</option>
+                  <option value="base">Base (~145MB) - Schnell</option>
+                  <option value="small">Small (~480MB) - Gut</option>
+                  <option value="medium">Medium (~1.5GB) - Empfohlen ⭐</option>
+                  <option value="large">Large (~3GB) - Beste Qualität</option>
+                </select>
+                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                  Modell wird beim ersten Start automatisch heruntergeladen
+                </div>
+              </div>
+            )}
+
+            {/* CPU Threads */}
+            {(formData.transcriptionMode === 'local' || formData.transcriptionMode === 'auto') && !localCapabilities?.gpuAvailable && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '14px', color: '#ffffff' }}>
+                    CPU Threads
+                  </label>
+                  <span style={{ fontSize: '14px', color: '#94a3b8' }}>
+                    {formData.whisperCpuThreads}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="16"
+                  step="1"
+                  value={formData.whisperCpuThreads}
+                  onChange={(e) => handleInputChange("whisperCpuThreads", parseInt(e.target.value))}
+                  style={{ width: '100%', height: '4px', backgroundColor: '#0a0a0a', cursor: 'pointer' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                  <span>1 Thread</span>
+                  <span>16 Threads</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Beep Volume */}
