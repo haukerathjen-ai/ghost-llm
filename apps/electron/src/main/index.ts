@@ -301,7 +301,26 @@ function registerIPCHandlers() {
     if (recordingManager && settings.typingSpeed) {
       recordingManager.setTypingSpeed(settings.typingSpeed);
     }
+    // Store transcription settings
+    if (settings.transcriptionMode) {
+      // TODO: Store to electron-store
+    }
     // TODO: Store beepVolume and theme settings
+  });
+
+  // Get local transcription capabilities
+  ipcMain.handle('transcription:check-local-capabilities', async () => {
+    try {
+      const { getLocalTranscriptionCapabilities } = await import('./modules/transcribe-local');
+      const capabilities = await getLocalTranscriptionCapabilities();
+      return capabilities;
+    } catch (error) {
+      console.error('[IPC] Failed to check local capabilities:', error);
+      return {
+        pythonAvailable: false,
+        whisperInstalled: false,
+      };
+    }
   });
 }
 

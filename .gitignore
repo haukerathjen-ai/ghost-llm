@@ -32,3 +32,8 @@ nul
 audio-test.*
 temp-record.*
 .claude/
+
+# Large binary files (CUDA DLLs, Whisper models)
+*.dll
+*.bin
+apps/electron/python/*.dll
