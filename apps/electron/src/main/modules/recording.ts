@@ -108,6 +108,7 @@ export class RecordingManager extends EventEmitter {
       this.state = 'recording';
       await this.audioRecorder.startRecording(); // Now async to perform device check
       this.emit('status', { state: 'recording', message: 'Recording started' });
+      this.emit('activity', { timestamp: new Date(), action: 'Aufnahme gestartet' });
     } catch (error) {
       this.state = 'idle';
       this.handleError(error as Error);
@@ -132,10 +133,13 @@ export class RecordingManager extends EventEmitter {
       // Step 2: Capture screenshot (RAM only)
       this.emit('status', { state: 'processing', message: '📸 Erstelle Screenshot...' });
       const screenshot = await captureScreen();
+      this.emit('activity', { timestamp: new Date(), action: 'Screenshot erstellt' });
 
-      // Step 3: Transcribe audio using Whisper
-      this.emit('status', { state: 'processing', message: '☁️ Transkribiere...' });
+      // Step 3: Transcribe audio using Whisper (German-optimized)
+      this.emit('status', { state: 'processing', message: '☁️ Transkribiere (DE)...' });
+      this.emit('activity', { timestamp: new Date(), action: '☁️ Transkribiere (DE)...' });
       const transcribedText = await transcribeAudio(audioBuffer);
+      this.emit('activity', { timestamp: new Date(), action: '✅ Transkription abgeschlossen' });
 
       // Step 4: Enrich with Claude Vision (sends both text and screenshot)
       this.emit('status', { state: 'processing', message: '🧠 Claude denkt nach...' });
@@ -144,9 +148,11 @@ export class RecordingManager extends EventEmitter {
         screenshot,
         this.config.strategyId
       );
+      this.emit('activity', { timestamp: new Date(), action: 'Analyse abgeschlossen' });
 
       // Step 5: Ghost type the result
       this.emit('status', { state: 'processing', message: '⌨️ Tippe...' });
+      this.emit('activity', { timestamp: new Date(), action: '⌨️ Tippe Antwort...' });
       
       // Set typing speed if configured
       if (this.config.typingSpeed) {
@@ -158,9 +164,12 @@ export class RecordingManager extends EventEmitter {
       await playBeep();
       await delay(750);
 
-      // Use pasteText instead of typeText for reliability
-      // (avoids complex SendKeys escaping issues)
-      await ghostTyper.pasteText(enrichedText);
+      // Additional 500ms safety delay before typing starts
+      await delay(500);
+
+      // Type the enriched text character by character
+      await ghostTyper.typeText(enrichedText);
+      this.emit('activity', { timestamp: new Date(), action: '✅ Typing abgeschlossen' });
 
       // Emit completion event with results
       this.emit('complete', {
@@ -172,6 +181,7 @@ export class RecordingManager extends EventEmitter {
       // Reset to idle state
       this.state = 'idle';
       this.emit('status', { state: 'idle', message: 'Ready' });
+      this.emit('activity', { timestamp: new Date(), action: 'Bereit für nächste Aufnahme' });
 
     } catch (error) {
       this.state = 'idle';

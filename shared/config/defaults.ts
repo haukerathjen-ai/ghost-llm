@@ -5,13 +5,11 @@
 
 export interface AppSettings {
   typingSpeed: number;
-  useClipboard: boolean;
   theme: 'dark' | 'light';
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   typingSpeed: 100,
-  useClipboard: false,
   theme: 'dark'
 };
 

@@ -7,7 +7,8 @@ import type {
   TranscriptionResult,
   HistoryEntry,
   Strategy,
-  AppSettings
+  AppSettings,
+  ActivityLogEntry
 } from '@shared/types';
 
 // Define the API interface that will be exposed to the renderer
@@ -17,11 +18,13 @@ export interface GhostAPI {
   stopRecording: () => Promise<void>;
   onRecordingStatus: (callback: (status: RecordingStatus) => void) => () => void;
   onTranscriptionComplete: (callback: (result: TranscriptionResult) => void) => () => void;
+  onActivityLog: (callback: (entry: ActivityLogEntry) => void) => () => void;
   getHistory: () => Promise<HistoryEntry[]>;
   setStrategy: (strategyId: string) => Promise<void>;
   getSettings: () => Promise<AppSettings>;
   saveSettings: (settings: AppSettings) => Promise<void>;
   checkSoxAvailable: () => Promise<boolean>;
+  checkAPIKeys: () => Promise<{ openai: boolean; anthropic: boolean }>;
 }
 
 // Expose the API to the renderer process
@@ -69,6 +72,20 @@ const ghostAPI: GhostAPI = {
     };
   },
 
+  // Listen for activity log updates
+  onActivityLog: (callback: (entry: ActivityLogEntry) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, entry: ActivityLogEntry) => {
+      callback(entry);
+    };
+
+    ipcRenderer.on('ghost:activity-log', listener);
+
+    // Return cleanup function
+    return () => {
+      ipcRenderer.removeListener('ghost:activity-log', listener);
+    };
+  },
+
   // Get transcription history
   getHistory: async (): Promise<HistoryEntry[]> => {
     return ipcRenderer.invoke('history:get');
@@ -92,6 +109,11 @@ const ghostAPI: GhostAPI = {
   // Check if SoX is available
   checkSoxAvailable: async (): Promise<boolean> => {
     return ipcRenderer.invoke('system:check-sox');
+  },
+
+  // Check API keys status
+  checkAPIKeys: async (): Promise<{ openai: boolean; anthropic: boolean }> => {
+    return ipcRenderer.invoke('system:check-api-keys');
   },
 };
 

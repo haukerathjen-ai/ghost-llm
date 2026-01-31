@@ -6,7 +6,6 @@ import { promisify } from 'util';
 import { writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { clipboard } from 'electron';
 
 const execAsync = promisify(exec);
 
@@ -251,96 +250,6 @@ export class GhostTyper {
     for (const chunk of chunks) {
       // Use xdotool to type text with delay
       await execAsync(`xdotool type --delay ${this.config.typingSpeed} "${chunk}"`);
-    }
-  }
-
-  /**
-   * Pastes text using clipboard and simulates Ctrl+V / Cmd+V
-   * @param text Text to paste
-   */
-  async pasteText(text: string): Promise<void> {
-    try {
-      console.log(`[GhostTyper] Pasting ${text.length} characters via clipboard...`);
-
-      // NO initial delay - recording.ts already waits 750ms
-      // The target application should already have focus
-
-      // Save current clipboard content
-      const previousClipboard = clipboard.readText();
-
-      // Copy text to clipboard
-      clipboard.writeText(text);
-      console.log('[GhostTyper] Text copied to clipboard');
-
-      // Small delay to ensure clipboard is updated
-      await this.delay(100);
-
-      // Simulate Ctrl+V / Cmd+V using OS-specific commands
-      switch (this.platform) {
-        case 'win32':
-          await this.pasteWindows();
-          break;
-        case 'darwin':
-          await this.pasteMacOS();
-          break;
-        case 'linux':
-          await this.pasteLinux();
-          break;
-        default:
-          throw new Error(`Unsupported platform: ${this.platform}`);
-      }
-
-      // Wait a bit before restoring clipboard
-      await this.delay(500);
-      
-      // Restore previous clipboard content
-      clipboard.writeText(previousClipboard);
-
-      console.log('[GhostTyper] Text pasted successfully');
-    } catch (error) {
-      this.handleError(error, 'pasteText');
-    }
-  }
-
-  /**
-   * Simulates Ctrl+V on Windows using PowerShell
-   */
-  private async pasteWindows(): Promise<void> {
-    console.log('[GhostTyper] Sending Ctrl+V on Windows...');
-    
-    // Use a simpler, more direct approach
-    const psScript = `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^v')`;
-    
-    await execAsync(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${psScript}"`, {
-      timeout: 5000,
-    });
-    
-    console.log('[GhostTyper] Ctrl+V sent');
-  }
-
-  /**
-   * Simulates Cmd+V on macOS
-   */
-  private async pasteMacOS(): Promise<void> {
-    const script = `
-      tell application "System Events"
-        keystroke "v" using command down
-      end tell
-    `;
-    await execAsync(`osascript -e '${script}'`);
-  }
-
-  /**
-   * Simulates Ctrl+V on Linux
-   */
-  private async pasteLinux(): Promise<void> {
-    try {
-      await execAsync('which xdotool');
-      await execAsync('xdotool key ctrl+v');
-    } catch (error) {
-      throw new Error(
-        'xdotool is not installed. Please install it to use paste functionality.'
-      );
     }
   }
 

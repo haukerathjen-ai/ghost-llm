@@ -10,6 +10,7 @@ import type {
   TranscriptionHistory,
   UserSettings,
   TranscriptionStrategy,
+  ActivityLogEntry,
 } from '@shared/types';
 
 interface UseElectronIPCReturn {
@@ -20,6 +21,7 @@ interface UseElectronIPCReturn {
   historyPreview: TranscriptionHistory[];
   settings: UserSettings | null;
   strategy: string | null;
+  activityLog: ActivityLogEntry[];
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   setStrategy: (strategy: TranscriptionStrategy) => Promise<void>;
@@ -32,6 +34,7 @@ export function useElectronIPC(): UseElectronIPCReturn {
   const [currentTranscription, setCurrentTranscription] = useState<TranscriptionResult | null>(null);
   const [history, setHistory] = useState<TranscriptionHistory[]>([]);
   const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
 
   // Check if Electron API is available
   const isElectronAvailable = typeof window !== 'undefined' && window.ghostAPI;
@@ -57,9 +60,18 @@ export function useElectronIPC(): UseElectronIPCReturn {
       refreshHistory();
     };
 
+    // Activity log listener - keep only last 5 entries, newest first
+    const handleActivityLog = (entry: ActivityLogEntry) => {
+      setActivityLog((prev) => {
+        const newLog = [entry, ...prev].slice(0, 5);
+        return newLog;
+      });
+    };
+
     // Subscribe to events
     window.ghostAPI.onRecordingStatus(handleRecordingStatus);
     window.ghostAPI.onTranscriptionComplete(handleTranscriptionComplete);
+    window.ghostAPI.onActivityLog(handleActivityLog);
 
     // Load initial data
     loadInitialData();
@@ -164,6 +176,7 @@ export function useElectronIPC(): UseElectronIPCReturn {
     historyPreview: history,
     settings,
     strategy: settings?.strategy || null,
+    activityLog,
     startRecording,
     stopRecording,
     setStrategy,

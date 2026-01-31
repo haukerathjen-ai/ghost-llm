@@ -161,6 +161,12 @@ function initializeRecordingManager() {
       }
     });
 
+    recordingManager.on('activity', (activityEntry) => {
+      if (mainWindow) {
+        mainWindow.webContents.send('ghost:activity-log', activityEntry);
+      }
+    });
+
     recordingManager.on('error', (error) => {
       if (mainWindow) {
         mainWindow.webContents.send('ghost:error', error);
@@ -188,12 +194,27 @@ function checkSoxAvailable(): boolean {
 }
 
 /**
+ * Check if API keys are configured in .env
+ */
+function checkAPIKeys(): { openai: boolean; anthropic: boolean } {
+  return {
+    openai: !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_openai_api_key_here',
+    anthropic: !!process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here',
+  };
+}
+
+/**
  * Register IPC handlers for ghost typing and other features
  */
 function registerIPCHandlers() {
   // Check SoX availability
   ipcMain.handle('system:check-sox', async () => {
     return checkSoxAvailable();
+  });
+
+  // Check API keys status
+  ipcMain.handle('system:check-api-keys', async () => {
+    return checkAPIKeys();
   });
 
   // Ghost typing debug test handler
@@ -266,20 +287,21 @@ function registerIPCHandlers() {
 
   // Get settings (placeholder)
   ipcMain.handle('settings:get', async () => {
-    // TODO: Implement settings storage
+    // TODO: Implement settings storage with electron-store
     return {
-      strategyId: 'coder',
       typingSpeed: 50,
+      beepVolume: 75,
+      theme: 'dark',
     };
   });
 
   // Save settings (placeholder)
   ipcMain.handle('settings:save', async (_event, settings) => {
-    // TODO: Implement settings storage
-    if (recordingManager) {
-      recordingManager.setStrategy(settings.strategyId);
+    // TODO: Implement settings storage with electron-store
+    if (recordingManager && settings.typingSpeed) {
       recordingManager.setTypingSpeed(settings.typingSpeed);
     }
+    // TODO: Store beepVolume and theme settings
   });
 }
 
@@ -289,6 +311,16 @@ app.whenReady().then(() => {
   registerGlobalShortcuts();
   registerIPCHandlers();
   initializeRecordingManager();
+
+  // Check API keys on startup and warn if missing
+  const apiKeyStatus = checkAPIKeys();
+  if (!apiKeyStatus.openai || !apiKeyStatus.anthropic) {
+    console.warn('[Ghost LLM] ⚠️ API-Keys in .env fehlen!');
+    console.warn(`  OpenAI: ${apiKeyStatus.openai ? '✅' : '❌'}`);
+    console.warn(`  Anthropic: ${apiKeyStatus.anthropic ? '✅' : '❌'}`);
+  } else {
+    console.log('[Ghost LLM] ✅ All API keys configured');
+  }
 
   app.on('activate', () => {
     // On macOS re-create window when dock icon is clicked

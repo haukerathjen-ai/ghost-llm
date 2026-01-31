@@ -13,11 +13,14 @@ export interface TranscriptionRecord {
 }
 
 export interface AppSettings {
-  openaiKey: string;
-  anthropicKey: string;
   typingSpeed: number;
-  useClipboard: boolean;
+  beepVolume: number;
   theme: 'dark' | 'darker';
+}
+
+export interface APIKeyStatus {
+  openai: boolean;
+  anthropic: boolean;
 }
 
 export type RecordingStatus = 'idle' | 'recording' | 'transcribing' | 'enriching' | 'typing';
@@ -44,4 +47,9 @@ export interface HistoryEntry {
   strategy: string;
   duration?: number;
   language?: string;
+}
+
+export interface ActivityLogEntry {
+  timestamp: Date;
+  action: string;
 }

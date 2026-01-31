@@ -45,7 +45,8 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
           file: fileStream,
           model: 'whisper-1',
           language: 'de', // Explicitly set German language for better accuracy
-          prompt: 'Transkribiere den deutschen Sprachbefehl genau.', // Context hint for Whisper
+          temperature: 0, // Deterministic output, no hallucinations
+          prompt: 'Dies ist Ghost LLM. Ich helfe dem Nutzer bei Fragen zum Bildschirm, beim Programmieren und beim Schreiben von Texten. Befehle wie: Siehst du eine Frage, bitte beantworte diese. Schreibe den Code für mich. Erkläre mir diesen Fehler. Formatiere diesen Text.', // Context for better accuracy
         });
 
         const transcribedText = transcription.text;

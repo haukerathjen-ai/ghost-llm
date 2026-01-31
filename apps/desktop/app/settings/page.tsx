@@ -8,29 +8,33 @@ import { useRouter } from "next/navigation";
 import { ghostAPI } from "@/lib/ghost-api";
 
 interface SettingsForm {
-  openaiApiKey: string;
-  anthropicApiKey: string;
   typingSpeed: number;
-  autoPaste: boolean;
+  beepVolume: number;
   theme: "dark" | "darker";
+}
+
+interface APIKeyStatus {
+  openai: boolean;
+  anthropic: boolean;
 }
 
 export default function SettingsPage() {
   const router = useRouter();
   const [formData, setFormData] = useState<SettingsForm>({
-    openaiApiKey: "",
-    anthropicApiKey: "",
-    typingSpeed: 100,
-    autoPaste: false,
+    typingSpeed: 50,
+    beepVolume: 75,
     theme: "dark",
+  });
+  const [apiKeyStatus, setApiKeyStatus] = useState<APIKeyStatus>({
+    openai: false,
+    anthropic: false,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [showOpenAIKey, setShowOpenAIKey] = useState(false);
-  const [showAnthropicKey, setShowAnthropicKey] = useState(false);
 
   useEffect(() => {
     loadSettings();
+    checkAPIKeys();
   }, []);
 
   const loadSettings = async () => {
@@ -43,6 +47,15 @@ export default function SettingsPage() {
       console.error("Failed to load settings:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const checkAPIKeys = async () => {
+    try {
+      const status = await ghostAPI.checkAPIKeys();
+      setApiKeyStatus(status);
+    } catch (error) {
+      console.error("Failed to check API keys:", error);
     }
   };
 
@@ -99,95 +112,65 @@ export default function SettingsPage() {
         </header>
 
         <form onSubmit={handleSubmit}>
-          {/* API Keys Section */}
+          {/* API Status Section */}
           <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
             <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
-              API-Schlüssel
+              API-Verbindung
             </h2>
+            <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>
+              Konfiguriert über .env-Datei im Root-Ordner
+            </div>
             
-            {/* OpenAI API Key */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '14px', color: '#94a3b8', marginBottom: '8px' }}>
-                OpenAI API Key
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showOpenAIKey ? "text" : "password"}
-                  value={formData.openaiApiKey}
-                  onChange={(e) => handleInputChange("openaiApiKey", e.target.value)}
-                  placeholder="sk-..."
-                  style={{ 
-                    width: '100%', 
-                    backgroundColor: '#0a0a0a', 
-                    border: '1px solid #1e293b', 
-                    padding: '12px', 
-                    paddingRight: '80px',
-                    color: '#ffffff',
-                    fontSize: '14px'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowOpenAIKey(!showOpenAIKey)}
-                  style={{ 
-                    position: 'absolute', 
-                    right: '8px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    color: '#94a3b8', 
-                    background: 'none', 
-                    border: 'none', 
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    padding: '4px 8px'
-                  }}
-                >
-                  {showOpenAIKey ? "Verbergen" : "Anzeigen"}
-                </button>
+            {/* OpenAI Status */}
+            <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ 
+                width: '8px', 
+                height: '8px', 
+                borderRadius: '50%', 
+                backgroundColor: apiKeyStatus.openai ? '#10b981' : '#ef4444',
+                flexShrink: 0
+              }}></div>
+              <div>
+                <div style={{ fontSize: '14px', color: '#ffffff' }}>
+                  OpenAI {apiKeyStatus.openai ? '✅' : '❌'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                  {apiKeyStatus.openai ? 'Verbunden' : 'Nicht konfiguriert'}
+                </div>
               </div>
             </div>
 
-            {/* Anthropic API Key */}
-            <div>
-              <label style={{ display: 'block', fontSize: '14px', color: '#94a3b8', marginBottom: '8px' }}>
-                Anthropic API Key
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showAnthropicKey ? "text" : "password"}
-                  value={formData.anthropicApiKey}
-                  onChange={(e) => handleInputChange("anthropicApiKey", e.target.value)}
-                  placeholder="sk-ant-..."
-                  style={{ 
-                    width: '100%', 
-                    backgroundColor: '#0a0a0a', 
-                    border: '1px solid #1e293b', 
-                    padding: '12px', 
-                    paddingRight: '80px',
-                    color: '#ffffff',
-                    fontSize: '14px'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAnthropicKey(!showAnthropicKey)}
-                  style={{ 
-                    position: 'absolute', 
-                    right: '8px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    color: '#94a3b8', 
-                    background: 'none', 
-                    border: 'none', 
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    padding: '4px 8px'
-                  }}
-                >
-                  {showAnthropicKey ? "Verbergen" : "Anzeigen"}
-                </button>
+            {/* Anthropic Status */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ 
+                width: '8px', 
+                height: '8px', 
+                borderRadius: '50%', 
+                backgroundColor: apiKeyStatus.anthropic ? '#10b981' : '#ef4444',
+                flexShrink: 0
+              }}></div>
+              <div>
+                <div style={{ fontSize: '14px', color: '#ffffff' }}>
+                  Anthropic {apiKeyStatus.anthropic ? '✅' : '❌'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                  {apiKeyStatus.anthropic ? 'Verbunden' : 'Nicht konfiguriert'}
+                </div>
               </div>
             </div>
+
+            {(!apiKeyStatus.openai || !apiKeyStatus.anthropic) && (
+              <div style={{ 
+                marginTop: '16px', 
+                padding: '12px', 
+                backgroundColor: '#ef444420', 
+                border: '1px solid #ef4444', 
+                fontSize: '12px', 
+                color: '#fca5a5' 
+              }}>
+                ⚠️ Fügen Sie Ihre API-Keys in die .env-Datei ein und starten Sie die App neu.
+              </div>
+            )}
           </div>
 
           {/* Hotkey Configuration */}
@@ -237,42 +220,33 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Auto-paste vs Auto-type */}
+          {/* Beep Volume */}
           <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
             <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
-              Einfügemodus
+              Audio-Feedback
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: '14px', color: '#ffffff', marginBottom: '4px' }}>Auto-Paste</div>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                  {formData.autoPaste ? "Text wird direkt eingefügt" : "Text wird Zeichen für Zeichen getippt"}
-                </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label style={{ fontSize: '14px', color: '#ffffff' }}>
+                  Beep-Lautstärke
+                </label>
+                <span style={{ fontSize: '14px', color: '#94a3b8' }}>
+                  {formData.beepVolume}%
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={() => handleInputChange("autoPaste", !formData.autoPaste)}
-                style={{
-                  position: 'relative',
-                  display: 'inline-flex',
-                  height: '24px',
-                  width: '44px',
-                  alignItems: 'center',
-                  backgroundColor: formData.autoPaste ? '#ffffff' : '#1e293b',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                <span
-                  style={{
-                    display: 'inline-block',
-                    height: '16px',
-                    width: '16px',
-                    backgroundColor: formData.autoPaste ? '#0a0a0a' : '#ffffff',
-                    transform: formData.autoPaste ? 'translateX(24px)' : 'translateX(4px)',
-                  }}
-                />
-              </button>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={formData.beepVolume}
+                onChange={(e) => handleInputChange("beepVolume", parseInt(e.target.value))}
+                style={{ width: '100%', height: '4px', backgroundColor: '#0a0a0a', cursor: 'pointer' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                <span>Stumm (0%)</span>
+                <span>Max (100%)</span>
+              </div>
             </div>
           </div>
 

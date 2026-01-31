@@ -6,16 +6,20 @@
  */
 
 interface SettingsData {
-  openaiApiKey: string;
-  anthropicApiKey: string;
   typingSpeed: number;
-  autoPaste: boolean;
+  beepVolume: number;
   theme: 'dark' | 'darker';
+}
+
+interface APIKeyStatus {
+  openai: boolean;
+  anthropic: boolean;
 }
 
 interface GhostAPIClient {
   loadSettings: () => Promise<SettingsData | null>;
   saveSettings: (settings: SettingsData) => Promise<void>;
+  checkAPIKeys: () => Promise<APIKeyStatus>;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   setStrategy: (strategyId: string) => Promise<void>;
@@ -42,6 +46,7 @@ interface WindowGhostAPI {
   
   // System checks
   checkSoxAvailable: () => Promise<boolean>;
+  checkAPIKeys: () => Promise<{ openai: boolean; anthropic: boolean }>;
   
   // Listener cleanup
   removeListener?: (event: string, callback: Function) => void;
@@ -175,6 +180,25 @@ export const ghostAPI: GhostAPIClient = {
     // Fallback for browser mode
     console.warn('[GhostAPI] History not available in browser mode');
     return [];
+  },
+
+  /**
+   * Check API keys status from .env
+   */
+  checkAPIKeys: async (): Promise<APIKeyStatus> => {
+    const api = getWindowAPI();
+    if (api?.checkAPIKeys) {
+      try {
+        return await api.checkAPIKeys();
+      } catch (error) {
+        console.error('[GhostAPI] Failed to check API keys:', error);
+        return { openai: false, anthropic: false };
+      }
+    }
+    
+    // Fallback for browser mode
+    console.warn('[GhostAPI] API key check not available in browser mode');
+    return { openai: false, anthropic: false };
   },
 };
 

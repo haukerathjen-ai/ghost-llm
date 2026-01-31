@@ -11,23 +11,47 @@ import RecordingButton from '@/components/RecordingButton';
 import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
-  const { status, isRecording, startRecording, stopRecording } = useElectronIPC();
+  const { status, isRecording, startRecording, stopRecording, activityLog } = useElectronIPC();
   const [soxAvailable, setSoxAvailable] = useState<boolean | null>(null);
-  const [strategy] = useState<string>('coder');
+  const [statusMessage, setStatusMessage] = useState<string>('System bereit');
+  const [apiKeysOk, setApiKeysOk] = useState<boolean | null>(null);
 
   useEffect(() => {
     // Check if SoX is available
     if (typeof window !== 'undefined' && window.ghostAPI) {
       window.ghostAPI.checkSoxAvailable().then(setSoxAvailable).catch(() => setSoxAvailable(false));
+      
+      // Check API keys status
+      window.ghostAPI.checkAPIKeys().then((status) => {
+        setApiKeysOk(status.openai && status.anthropic);
+      }).catch(() => setApiKeysOk(false));
     }
   }, []);
 
-  // Get system status message
-  const systemStatus = soxAvailable === null 
-    ? 'Checking audio engine...'
-    : soxAvailable 
-      ? 'System bereit' 
-      : 'Audio-Engine (SoX) nicht gefunden';
+
+  // Update status message based on recording state
+  useEffect(() => {
+    if (soxAvailable === null) {
+      setStatusMessage('Checking audio engine...');
+    } else if (!soxAvailable) {
+      setStatusMessage('Audio-Engine (SoX) nicht gefunden');
+    } else if (isRecording) {
+      setStatusMessage('Aufnahme läuft...');
+    } else if (status && typeof status === 'object' && 'message' in status) {
+      // Use message from RecordingManager status events
+      setStatusMessage((status as any).message);
+    } else {
+      setStatusMessage('System bereit');
+    }
+  }, [soxAvailable, isRecording, status]);
+
+  // Format timestamp for activity log
+  const formatTime = (timestamp: Date) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: '#ffffff' }}>
@@ -51,6 +75,29 @@ export default function DashboardPage() {
           </p>
         </header>
 
+        {/* API Keys Warning */}
+        {apiKeysOk === false && (
+          <div style={{ 
+            backgroundColor: '#ef444420', 
+            border: '1px solid #ef4444', 
+            padding: '16px', 
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px'
+          }}>
+            <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>
+            <div>
+              <div style={{ fontSize: '14px', color: '#fca5a5', fontWeight: '500', marginBottom: '4px' }}>
+                API-Keys in .env fehlen!
+              </div>
+              <div style={{ fontSize: '12px', color: '#fca5a5' }}>
+                Fügen Sie OPENAI_API_KEY und ANTHROPIC_API_KEY in die .env-Datei ein und starten Sie die App neu.
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Status Section */}
         <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
           <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
@@ -59,7 +106,7 @@ export default function DashboardPage() {
           <StatusIndicator status={status} size="medium" />
           <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #1e293b' }}>
             <p style={{ fontSize: '14px', color: '#94a3b8' }}>
-              {systemStatus}
+              {statusMessage}
             </p>
           </div>
         </div>
@@ -73,19 +120,6 @@ export default function DashboardPage() {
             isRecording={isRecording} 
             onToggle={isRecording ? stopRecording : startRecording} 
           />
-        </div>
-
-        {/* Current Strategy */}
-        <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '12px' }}>
-            Aktive Strategie
-          </h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '8px', height: '8px', backgroundColor: '#ffffff' }}></div>
-            <span style={{ fontSize: '18px', fontWeight: '500', color: '#ffffff', textTransform: 'capitalize' }}>
-              {strategy}
-            </span>
-          </div>
         </div>
 
         {/* Activity Log */}
@@ -102,11 +136,23 @@ export default function DashboardPage() {
             </Link>
           </div>
           
-          {/* Activity List */}
+          {/* Activity List - Show last 5 entries, newest first */}
           <div>
-            <div style={{ fontSize: '14px', color: '#94a3b8', padding: '32px 0', textAlign: 'center' }}>
-              Keine Aktivität
-            </div>
+            {activityLog.length === 0 ? (
+              <div style={{ fontSize: '14px', color: '#94a3b8', padding: '32px 0', textAlign: 'center' }}>
+                Keine Aktivität
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {activityLog.map((entry, index) => (
+                  <div key={index} style={{ fontSize: '14px', color: '#94a3b8' }}>
+                    <span style={{ color: '#64748b' }}>[{formatTime(entry.timestamp)}]</span>
+                    {' - '}
+                    <span>{entry.action}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
