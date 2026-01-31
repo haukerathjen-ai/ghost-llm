@@ -1,33 +1,63 @@
 #!/usr/bin/env node
 
 /**
- * Launcher with Binary Bypass
- *
- * This launcher forces Electron to pre-load its bindings by spawning
- * the electron binary directly with the main entry point.
+ * Ghost LLM Production Launcher
+ * 
+ * Compiles TypeScript with tsc-alias to resolve path aliases
+ * Then launches Electron with the compiled code
  */
 
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
-// Get the electron binary path (this will be the .exe path)
+// Load environment variables BEFORE starting Electron
+require('dotenv').config();
+
+console.log('[launcher] Ghost LLM Production Launcher');
+console.log('[launcher] Environment variables loaded from .env');
+console.log('[launcher] Compiling TypeScript...');
+
+// Step 1: Compile TypeScript
+try {
+  execSync('npx tsc -p apps/electron/tsconfig.json', { 
+    stdio: 'inherit',
+    cwd: __dirname 
+  });
+  console.log('[launcher] TypeScript compiled');
+} catch (error) {
+  console.error('[launcher] TypeScript compilation failed');
+  process.exit(1);
+}
+
+// Step 2: Resolve path aliases with tsc-alias
+console.log('[launcher] Resolving path aliases...');
+try {
+  execSync('npx tsc-alias -p apps/electron/tsconfig.json', { 
+    stdio: 'inherit',
+    cwd: __dirname 
+  });
+  console.log('[launcher] Path aliases resolved');
+} catch (error) {
+  console.error('[launcher] tsc-alias failed');
+  process.exit(1);
+}
+
+// Step 3: Start Electron
+console.log('[launcher] Starting Electron...');
 const electronBinary = require('electron');
+const compiledEntry = path.join(__dirname, 'apps', 'electron', 'dist', 'apps', 'electron', 'src', 'main', 'index.js');
 
-// Path to the main entry point
-const mainEntry = path.join(__dirname, 'apps', 'electron', 'main.js');
+if (!fs.existsSync(compiledEntry)) {
+  console.error('[launcher] Compiled entry not found:', compiledEntry);
+  process.exit(1);
+}
 
-console.log('[launcher] Electron binary:', electronBinary);
-console.log('[launcher] Main entry:', mainEntry);
-console.log('[launcher] Spawning Electron with direct binary call...');
-
-// Spawn electron binary directly
-const electronProcess = spawn(electronBinary, [mainEntry], {
+const electronProcess = spawn(electronBinary, [compiledEntry], {
   stdio: 'inherit',
   env: {
     ...process.env,
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    // Force electron to expose its APIs
-    ELECTRON_RUN_AS_NODE: undefined
+    NODE_ENV: process.env.NODE_ENV || 'development'
   }
 });
 

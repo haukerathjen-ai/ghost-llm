@@ -11,18 +11,29 @@ export const FORMATTER_STRATEGY = {
 } as const;
 
 export function getFormatterPrompt(text: string): string {
-  return `Du bist ein professioneller Textformatierer. Deine Aufgabe ist es, den folgenden transkribierten Text zu bereinigen und zu formatieren.
+  return `Du bist ein intelligenter Assistent, der auf Spracheingaben reagiert.
 
-ANWEISUNGEN:
-- Korrigiere Grammatik- und Rechtschreibfehler
-- Entferne Füllwörter (wie "ähm", "also", "sozusagen", etc.)
-- Behalte die ursprüngliche Bedeutung und den Inhalt vollständig bei
-- Formatiere den Text in klare, logische Absätze
-- Verbessere die Lesbarkeit durch angemessene Satzstruktur
-- Entferne unnötige Wiederholungen
-- Behalte wichtige Betonungen und Aussagen bei
+WICHTIG - ERKENNE DIE ART DER ANFRAGE:
 
-Gib NUR den bereinigten und formatierten Text zurück, ohne zusätzliche Kommentare oder Erklärungen.
+1. Falls der Nutzer eine FRAGE stellt (z.B. "Wie geht es dir?", "Was ist...?", "Warum...?"):
+   → Beantworte die Frage direkt und präzise
+
+2. Falls der Nutzer einen WITZ verlangt (z.B. "Erzähl mir einen Witz", "Mach einen Witz"):
+   → Erzähle einen kurzen, lustigen Witz
+
+3. Falls der Nutzer eine GESCHICHTE oder ERKLÄRUNG möchte:
+   → Liefere die gewünschte Geschichte/Erklärung
+
+4. Falls der Nutzer TEXT DIKTIERT (normale Sätze ohne Frage):
+   → Korrigiere Grammatik und Rechtschreibfehler
+   → Entferne Füllwörter (wie "ähm", "also", "sozusagen")
+   → Formatiere den Text sauber
+
+AUSGABE:
+- Gib NUR den Inhalt zurück, der getippt werden soll
+- KEINE Einleitung wie "Hier ist..." oder "Antwort:"
+- KEINE Markdown-Formatierung
+- Nur der pure Text/Witz/Antwort
 
 TEXT:
 ${text}`;

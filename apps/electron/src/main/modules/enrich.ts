@@ -32,7 +32,7 @@ export async function enrichText(
     
     // Call Claude API
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       temperature: 0.3,
       messages: [
@@ -81,41 +81,67 @@ export async function enrichTextWithVision(
 ): Promise<string> {
   try {
     console.log(`[Enrich] Starting vision enrichment with strategy: ${strategyId}`);
+    console.log(`[Enrich] Transcribed text: "${text}"`);
 
-    // Get the base prompt for the strategy
-    const basePrompt = getPromptForStrategy(strategyId, text);
+    // Get the strategy prompt template (WITHOUT inserting text yet)
+    // We'll handle text insertion in the vision prompt directly
+    const basePrompt = getPromptForStrategy(strategyId, '');
 
     if (!basePrompt) {
       throw new Error(`Strategy with id "${strategyId}" not found`);
     }
 
     // Create vision-enhanced system prompt
-    const visionPrompt = `You are Ghost LLM, an AI assistant that analyzes both voice input and screen context.
+    const visionPrompt = `You are Ghost LLM, an AI assistant that responds intelligently to voice commands.
 
-SCREEN ANALYSIS:
-Analyze the provided screenshot to understand the user's current context:
-- If you see code with errors, help fix them
-- If you see an email draft, help improve it
-- If you see a document, help edit or enhance it
-- If you see a form, help fill it appropriately
+=== CRITICAL: USER'S SPOKEN REQUEST (MOST IMPORTANT) ===
+The user said via voice input:
+"${text}"
 
-USER REQUEST (transcribed from voice):
-${text}
+This is what you MUST respond to! The user's voice input is the PRIMARY instruction.
 
-STRATEGY: ${strategyId}
+=== SCREEN CONTEXT (SECONDARY) ===
+A screenshot is provided as additional context ONLY. Use it to understand the situation, but react primarily to the voice command.
+
+=== STRATEGY GUIDANCE (${strategyId}) ===
 ${basePrompt}
 
-IMPORTANT:
-- Respond ONLY with the text/code that should be typed into the application
-- Do NOT include explanations, markdown formatting, or meta-commentary
-- The output will be directly typed character-by-character into the active window
-- Be context-aware based on the screenshot`;
+=== CRITICAL DECISION RULES (OVERRIDE ALL STRATEGY PROMPTS) ===
+
+ANALYZE THE VOICE INPUT FIRST:
+
+1. Is it a JOKE/ENTERTAINMENT request?
+   Keywords: "Witz", "joke", "erzähl", "lustig", "tell me"
+   → Output: A short joke or entertainment text (NO CODE, NO MARKDOWN)
+
+2. Is it a QUESTION?
+   Keywords: "Wie", "Was", "Warum", "Who", "What", "Why", "How"
+   → Output: Direct text answer (NO CODE)
+
+3. Is it GENERAL CONVERSATION?
+   → Output: Conversational text response (NO CODE)
+
+4. Is it an EXPLICIT CODE REQUEST?
+   Keywords: "schreib code", "create function", "implement", "code for"
+   → Output: Code (with proper formatting)
+
+5. Does it mention a SCREEN PROBLEM/BUG and asks to fix it?
+   → Output: Fixed code
+
+=== OUTPUT FORMAT (ABSOLUTELY CRITICAL) ===
+- Return ONLY the raw content that should be typed
+- NO introductions: NO "Hier ist...", NO "Here's...", NO "Antwort:"
+- NO markdown formatting UNLESS providing actual code
+- NO explanations or commentary
+- Just the pure joke/answer/code
+
+REMEMBER: User said "${text}" - React to THESE WORDS primarily!`;
 
     console.log(`[Enrich] Sending request to Claude Vision API`);
     
     // Call Claude Vision API with image
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       temperature: 0.3,
       messages: [

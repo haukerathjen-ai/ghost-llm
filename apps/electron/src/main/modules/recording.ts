@@ -2,11 +2,44 @@
 // Licensed under the GNU General Public License v3.0
 
 import { EventEmitter } from 'events';
+import { exec } from 'child_process';
+import { spawn } from 'child_process';
+import { promisify } from 'util';
 import { AudioRecorder } from './audio';
 import { transcribeAudio } from './transcribe';
 import { captureScreen } from './vision';
 import { enrichTextWithVision } from './enrich';
 import { ghostTyper } from './ghost';
+
+const execAsync = promisify(exec);
+
+/**
+ * Plays a system beep sound to provide audio feedback.
+ * Used to signal typing is about to start (second beep).
+ */
+async function playBeep(): Promise<void> {
+  try {
+    if (process.platform === 'win32') {
+      // Windows: Use PowerShell Console Beep (850 Hz for 200ms - slightly different tone for distinction)
+      await execAsync('powershell.exe -ExecutionPolicy Bypass -Command "[console]::Beep(850, 200)"');
+    } else if (process.platform === 'darwin') {
+      // macOS: Play system sound
+      spawn('afplay', ['/System/Library/Sounds/Ping.aiff'], { stdio: 'ignore' });
+    } else {
+      // Linux: Play system bell
+      spawn('paplay', ['/usr/share/sounds/freedesktop/stereo/bell.oga'], { stdio: 'ignore' });
+    }
+  } catch (error) {
+    console.error('[RecordingManager] Failed to play beep:', error);
+  }
+}
+
+/**
+ * Helper function for async delays
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export type RecordingState = 'idle' | 'recording' | 'processing';
 
@@ -34,11 +67,11 @@ export class RecordingManager extends EventEmitter {
 
     // Forward audio recorder events
     this.audioRecorder.on('recording-started', () => {
-      this.emit('status', { state: 'recording', message: 'Recording audio...' });
+      this.emit('status', { state: 'recording', message: '🎙️ Aufnahme läuft...' });
     });
 
     this.audioRecorder.on('recording-stopped', (data) => {
-      this.emit('status', { state: 'processing', message: 'Processing audio...', duration: data.duration });
+      this.emit('status', { state: 'processing', message: '⚙️ Verarbeite Audio...', duration: data.duration });
     });
 
     this.audioRecorder.on('audio-level', (level) => {
@@ -72,9 +105,8 @@ export class RecordingManager extends EventEmitter {
     }
 
     try {
-      console.log('[RecordingManager] Starting recording...');
       this.state = 'recording';
-      this.audioRecorder.startRecording();
+      await this.audioRecorder.startRecording(); // Now async to perform device check
       this.emit('status', { state: 'recording', message: 'Recording started' });
     } catch (error) {
       this.state = 'idle';
@@ -91,43 +123,44 @@ export class RecordingManager extends EventEmitter {
     }
 
     try {
-      console.log('[RecordingManager] Stopping recording and processing...');
       this.state = 'processing';
       this.emit('status', { state: 'processing', message: 'Processing...' });
 
       // Step 1: Stop recording and get audio buffer
-      const audioBuffer = this.audioRecorder.stopRecording();
-      console.log('[RecordingManager] Audio recording stopped');
+      const audioBuffer = await this.audioRecorder.stopRecording();
 
       // Step 2: Capture screenshot (RAM only)
-      this.emit('status', { state: 'processing', message: 'Capturing screenshot...' });
+      this.emit('status', { state: 'processing', message: '📸 Erstelle Screenshot...' });
       const screenshot = await captureScreen();
-      console.log('[RecordingManager] Screenshot captured');
 
       // Step 3: Transcribe audio using Whisper
-      this.emit('status', { state: 'processing', message: 'Transcribing audio...' });
+      this.emit('status', { state: 'processing', message: '☁️ Transkribiere...' });
       const transcribedText = await transcribeAudio(audioBuffer);
-      console.log('[RecordingManager] Transcription complete:', transcribedText);
 
       // Step 4: Enrich with Claude Vision (sends both text and screenshot)
-      this.emit('status', { state: 'processing', message: 'Enriching with AI...' });
+      this.emit('status', { state: 'processing', message: '🧠 Claude denkt nach...' });
       const enrichedText = await enrichTextWithVision(
         transcribedText,
         screenshot,
         this.config.strategyId
       );
-      console.log('[RecordingManager] Enrichment complete');
 
       // Step 5: Ghost type the result
-      this.emit('status', { state: 'processing', message: 'Typing result...' });
+      this.emit('status', { state: 'processing', message: '⌨️ Tippe...' });
       
       // Set typing speed if configured
       if (this.config.typingSpeed) {
         ghostTyper.setTypingSpeed(this.config.typingSpeed);
       }
 
-      await ghostTyper.typeText(enrichedText);
-      console.log('[RecordingManager] Ghost typing complete');
+      // STEALTH MODE: Play second beep to signal typing is about to start
+      // Then wait 750ms to ensure OS focus is stable on target application
+      await playBeep();
+      await delay(750);
+
+      // Use pasteText instead of typeText for reliability
+      // (avoids complex SendKeys escaping issues)
+      await ghostTyper.pasteText(enrichedText);
 
       // Emit completion event with results
       this.emit('complete', {
@@ -143,7 +176,16 @@ export class RecordingManager extends EventEmitter {
     } catch (error) {
       this.state = 'idle';
       this.handleError(error as Error);
-      this.emit('status', { state: 'idle', message: 'Ready' });
+      
+      // Ghost Talk: Type error message directly into active window
+      try {
+        const errorMessage = (error as Error).message || 'Unknown error';
+        await ghostTyper.typeText(`!! Ghost Error: ${errorMessage} !!`);
+      } catch (typingError) {
+        console.error('[RecordingManager] Could not type error message:', typingError);
+      }
+      
+      this.emit('status', { state: 'idle', message: '❌ Fehler aufgetreten' });
     }
   }
 
@@ -151,7 +193,6 @@ export class RecordingManager extends EventEmitter {
    * Updates the active strategy
    */
   public setStrategy(strategyId: string): void {
-    console.log(`[RecordingManager] Strategy changed to: ${strategyId}`);
     this.config.strategyId = strategyId;
   }
 
@@ -159,7 +200,6 @@ export class RecordingManager extends EventEmitter {
    * Updates the typing speed
    */
   public setTypingSpeed(speed: number): void {
-    console.log(`[RecordingManager] Typing speed changed to: ${speed}ms`);
     this.config.typingSpeed = speed;
     ghostTyper.setTypingSpeed(speed);
   }

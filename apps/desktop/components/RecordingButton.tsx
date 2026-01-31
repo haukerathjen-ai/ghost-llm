@@ -15,49 +15,36 @@ export const RecordingButton: React.FC<RecordingButtonProps> = ({
   onToggle,
   disabled = false,
 }) => {
-  const handleClick = async () => {
+  const handleClick = () => {
     if (disabled) return;
-    
-    try {
-      if (isRecording) {
-        await window.ghostAPI.stopRecording();
-      } else {
-        await window.ghostAPI.startRecording();
-      }
-      onToggle();
-    } catch (error) {
-      console.error('Recording toggle error:', error);
-    }
+    onToggle();
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-4">
       <button
         onClick={handleClick}
         disabled={disabled}
         className={`
-          relative w-20 h-20 rounded-full
-          flex items-center justify-center
-          transition-all duration-300 ease-in-out
-          focus:outline-none focus:ring-4 focus:ring-purple-500/50
+          w-16 h-16 flex items-center justify-center
           ${
             disabled
-              ? 'bg-gray-300 cursor-not-allowed opacity-50'
+              ? 'bg-slate-800 cursor-not-allowed opacity-50'
               : isRecording
-              ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/50 animate-pulse'
-              : 'bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 hover:from-purple-600 hover:via-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/50 hover:shadow-xl hover:shadow-purple-600/60 hover:scale-105'
+              ? 'bg-slate-200 hover:bg-white'
+              : 'bg-slate-200 hover:bg-white'
           }
         `}
         aria-label={isRecording ? 'Stop Recording' : 'Start Recording'}
       >
         {isRecording ? (
-          <Square className="w-8 h-8 text-white" fill="white" />
+          <Square className="w-6 h-6 text-[#0a0a0a]" fill="#0a0a0a" />
         ) : (
-          <Mic className="w-8 h-8 text-white" />
+          <Mic className="w-6 h-6 text-[#0a0a0a]" />
         )}
       </button>
       
-      <div className="text-xs text-gray-500 font-medium">
+      <div className="text-xs text-slate-500">
         ⌘⇧G
       </div>
     </div>

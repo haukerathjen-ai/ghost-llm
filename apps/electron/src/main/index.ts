@@ -1,9 +1,9 @@
- // Copyright (c) 2026 Ghost LLM by haukerathjen-ai
+// Copyright (c) 2026 Ghost LLM by haukerathjen-ai
 // Licensed under the GNU General Public License v3.0
 
 import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import path from 'path';
-import { spawn, exec } from 'child_process';
+import { spawn, exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import { ghostTyper } from './modules/ghost';
 import { getRecordingManager } from './modules/recording';
@@ -74,14 +74,15 @@ function createWindow() {
 }
 
 function registerGlobalShortcuts() {
-  // Register CommandOrControl+Shift+G for Ghost LLM hotkey
-  const ret = globalShortcut.register('CommandOrControl+Shift+G', async () => {
+  // Hotkey handler function
+  const hotkeyHandler = async () => {
     console.log('[Ghost LLM] Global hotkey triggered');
 
     // Play audio feedback
     await playBeep();
 
     // Toggle recording if manager is initialized
+    // IMPORTANT: Do NOT focus/show window here - this would steal focus from target app!
     if (recordingManager) {
       try {
         await recordingManager.toggleRecording();
@@ -92,18 +93,39 @@ function registerGlobalShortcuts() {
       console.warn('[Ghost LLM] Recording manager not initialized yet');
     }
 
-    // Focus window
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
-  });
+    // STEALTH MODE: Do NOT focus window - let user keep focus on target application
+    // The dashboard updates via IPC without stealing focus
+  };
 
-  if (!ret) {
-    console.error('[Ghost LLM] Global shortcut registration failed');
-  } else {
+  // Try to register primary shortcut: Ctrl+Shift+G
+  let ret = globalShortcut.register('CommandOrControl+Shift+G', hotkeyHandler);
+  
+  if (ret) {
     console.log('[Ghost LLM] Global shortcut registered: CommandOrControl+Shift+G');
+    return;
   }
+  
+  console.warn('[Ghost LLM] Primary shortcut (Ctrl+Shift+G) failed, trying alternative...');
+  
+  // Try alternative shortcut: Ctrl+Alt+G
+  ret = globalShortcut.register('CommandOrControl+Alt+G', hotkeyHandler);
+  
+  if (ret) {
+    console.log('[Ghost LLM] Alternative shortcut registered: CommandOrControl+Alt+G');
+    return;
+  }
+  
+  console.warn('[Ghost LLM] Alternative shortcut (Ctrl+Alt+G) also failed, trying F9...');
+  
+  // Try F9 as last resort
+  ret = globalShortcut.register('F9', hotkeyHandler);
+  
+  if (ret) {
+    console.log('[Ghost LLM] Fallback shortcut registered: F9');
+    return;
+  }
+  
+  console.error('[Ghost LLM] All shortcut registrations failed! Please check if another app is using these shortcuts.');
 }
 
 /**
@@ -120,27 +142,29 @@ function initializeRecordingManager() {
     // Forward recording manager events to renderer
     recordingManager.on('status', (status) => {
       if (mainWindow) {
-        mainWindow.webContents.send('recording:status', status);
+        mainWindow.webContents.send('ghost:status-change', status);
+        mainWindow.webContents.send('recording:status', status); // Keep for backward compatibility
       }
-      console.log('[RecordingManager] Status:', status);
     });
 
     recordingManager.on('complete', (result) => {
       if (mainWindow) {
-        mainWindow.webContents.send('transcription:complete', result);
+        mainWindow.webContents.send('ghost:complete', result);
+        mainWindow.webContents.send('transcription:complete', result); // Keep for backward compatibility
       }
-      console.log('[RecordingManager] Complete:', result);
     });
 
     recordingManager.on('audio-level', (level) => {
       if (mainWindow) {
-        mainWindow.webContents.send('audio:level', level);
+        mainWindow.webContents.send('ghost:audio-level', level);
+        mainWindow.webContents.send('audio:level', level); // Keep for backward compatibility
       }
     });
 
     recordingManager.on('error', (error) => {
       if (mainWindow) {
-        mainWindow.webContents.send('recording:error', error);
+        mainWindow.webContents.send('ghost:error', error);
+        mainWindow.webContents.send('recording:error', error); // Keep for backward compatibility
       }
       console.error('[RecordingManager] Error:', error);
     });
@@ -152,20 +176,33 @@ function initializeRecordingManager() {
 }
 
 /**
+ * Check if SoX is available in PATH
+ */
+function checkSoxAvailable(): boolean {
+  try {
+    execSync('sox --version', { stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Register IPC handlers for ghost typing and other features
  */
 function registerIPCHandlers() {
+  // Check SoX availability
+  ipcMain.handle('system:check-sox', async () => {
+    return checkSoxAvailable();
+  });
+
   // Ghost typing debug test handler
   ipcMain.on('ghost:debug-typing', async () => {
     try {
-      console.log('[IPC] Ghost typing debug test initiated');
-
-      // Play beep to notify user
       await playBeep();
 
       // Open Notepad on Windows
       if (process.platform === 'win32') {
-        console.log('[IPC] Opening Notepad...');
         spawn('notepad.exe', [], { detached: true });
       } else if (process.platform === 'darwin') {
         spawn('open', ['-a', 'TextEdit'], { detached: true });
@@ -174,14 +211,10 @@ function registerIPCHandlers() {
       }
 
       // Wait 3 seconds for user to focus the target application
-      console.log('[IPC] Waiting 3 seconds before typing...');
       await new Promise(resolve => setTimeout(resolve, 3000));
 
       // Type the test message
-      console.log('[IPC] Starting ghost typing...');
       await ghostTyper.typeText('Ghost LLM Connection Verified');
-
-      console.log('[IPC] Ghost typing test completed successfully');
     } catch (error) {
       console.error('[IPC] Ghost typing test failed:', error);
     }

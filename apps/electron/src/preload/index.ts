@@ -21,6 +21,7 @@ export interface GhostAPI {
   setStrategy: (strategyId: string) => Promise<void>;
   getSettings: () => Promise<AppSettings>;
   saveSettings: (settings: AppSettings) => Promise<void>;
+  checkSoxAvailable: () => Promise<boolean>;
 }
 
 // Expose the API to the renderer process
@@ -86,6 +87,11 @@ const ghostAPI: GhostAPI = {
   // Save application settings
   saveSettings: async (settings: AppSettings): Promise<void> => {
     return ipcRenderer.invoke('settings:save', settings);
+  },
+
+  // Check if SoX is available
+  checkSoxAvailable: async (): Promise<boolean> => {
+    return ipcRenderer.invoke('system:check-sox');
   },
 };
 

@@ -17,7 +17,9 @@ interface UseElectronIPCReturn {
   status: RecordingStatus | null;
   currentTranscription: TranscriptionResult | null;
   history: TranscriptionHistory[];
+  historyPreview: TranscriptionHistory[];
   settings: UserSettings | null;
+  strategy: string | null;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   setStrategy: (strategy: TranscriptionStrategy) => Promise<void>;
@@ -159,7 +161,9 @@ export function useElectronIPC(): UseElectronIPCReturn {
     status,
     currentTranscription,
     history,
+    historyPreview: history,
     settings,
+    strategy: settings?.strategy || null,
     startRecording,
     stopRecording,
     setStrategy,

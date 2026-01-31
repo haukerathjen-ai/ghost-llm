@@ -4,154 +4,112 @@
 // Licensed under the GNU General Public License v3.0
 
 import Link from 'next/link';
-import { Settings, Clock, Activity } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useElectronIPC } from '@/hooks/useElectronIPC';
 import StatusIndicator from '@/components/StatusIndicator';
 import RecordingButton from '@/components/RecordingButton';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
-  const { status, strategy, historyPreview } = useElectronIPC();
+  const { status, isRecording, startRecording, stopRecording } = useElectronIPC();
+  const [soxAvailable, setSoxAvailable] = useState<boolean | null>(null);
+  const [strategy] = useState<string>('coder');
+
+  useEffect(() => {
+    // Check if SoX is available
+    if (typeof window !== 'undefined' && window.ghostAPI) {
+      window.ghostAPI.checkSoxAvailable().then(setSoxAvailable).catch(() => setSoxAvailable(false));
+    }
+  }, []);
+
+  // Get system status message
+  const systemStatus = soxAvailable === null 
+    ? 'Checking audio engine...'
+    : soxAvailable 
+      ? 'System bereit' 
+      : 'Audio-Engine (SoX) nicht gefunden';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      {/* Header */}
-      <header className="border-b border-white/10 backdrop-blur-xl bg-white/5">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/50">
-              <Activity className="w-6 h-6" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: '#ffffff' }}>
+      {/* Centered Container */}
+      <div style={{ maxWidth: '768px', margin: '0 auto', padding: '80px 24px' }}>
+        {/* Header */}
+        <header style={{ marginBottom: '64px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#ffffff' }}>
               Ghost LLM
             </h1>
+            <Link 
+              href="/settings"
+              style={{ padding: '8px', color: '#94a3b8' }}
+            >
+              <Settings style={{ width: '20px', height: '20px' }} />
+            </Link>
+          </div>
+          <p style={{ fontSize: '14px', color: '#94a3b8' }}>
+            Designed by Human | Developed by AI
+          </p>
+        </header>
+
+        {/* Status Section */}
+        <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
+            Status
+          </h2>
+          <StatusIndicator status={status} size="medium" />
+          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #1e293b' }}>
+            <p style={{ fontSize: '14px', color: '#94a3b8' }}>
+              {systemStatus}
+            </p>
+          </div>
+        </div>
+
+        {/* Recording Control */}
+        <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
+            Aufnahme
+          </h2>
+          <RecordingButton 
+            isRecording={isRecording} 
+            onToggle={isRecording ? stopRecording : startRecording} 
+          />
+        </div>
+
+        {/* Current Strategy */}
+        <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '12px' }}>
+            Aktive Strategie
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '8px', height: '8px', backgroundColor: '#ffffff' }}></div>
+            <span style={{ fontSize: '18px', fontWeight: '500', color: '#ffffff', textTransform: 'capitalize' }}>
+              {strategy}
+            </span>
+          </div>
+        </div>
+
+        {/* Activity Log */}
+        <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8' }}>
+              Aktivitäts-Log
+            </h2>
+            <Link 
+              href="/history"
+              style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'none' }}
+            >
+              Alle anzeigen
+            </Link>
           </div>
           
-          <Link 
-            href="/settings"
-            className="p-2 rounded-lg hover:bg-white/10 transition-all duration-200 hover:scale-110"
-          >
-            <Settings className="w-6 h-6" />
-          </Link>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - Status & Controls */}
-          <div className="space-y-6">
-            {/* Status Indicator Card */}
-            <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-8 shadow-2xl hover:bg-white/10 transition-all duration-300">
-              <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-purple-400" />
-                System Status
-              </h2>
-              <StatusIndicator status={status} size="large" />
-            </div>
-
-            {/* Recording Button Card */}
-            <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-8 shadow-2xl hover:bg-white/10 transition-all duration-300">
-              <RecordingButton />
-            </div>
-
-            {/* Hardware Test Card */}
-            <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-8 shadow-2xl hover:bg-white/10 transition-all duration-300">
-              <h3 className="text-sm font-medium text-white/60 mb-4">Hardware Bridge Test</h3>
-              <button
-                onClick={() => {
-                  if (window.ghostAPI?.send) {
-                    window.ghostAPI.send('ghost:debug-typing');
-                  }
-                }}
-                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg shadow-purple-500/50"
-              >
-                Test Ghost Typing
-              </button>
-              <p className="text-xs text-white/40 mt-3 text-center">
-                Opens Notepad and types test message after 3 seconds
-              </p>
-            </div>
-
-            {/* Current Strategy Card */}
-            <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 shadow-2xl hover:bg-white/10 transition-all duration-300">
-              <h3 className="text-sm font-medium text-white/60 mb-2">Active Strategy</h3>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-lg shadow-green-400/50"></div>
-                <span className="text-xl font-semibold">
-                  {strategy || 'No strategy loaded'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - History Preview */}
-          <div className="space-y-6">
-            <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-purple-400" />
-                  Recent Activity
-                </h2>
-                <Link 
-                  href="/history"
-                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-200 hover:underline"
-                >
-                  View All
-                </Link>
-              </div>
-
-              {/* History Items */}
-              <div className="space-y-3">
-                {historyPreview && historyPreview.length > 0 ? (
-                  historyPreview.slice(0, 5).map((item: any, index: number) => (
-                    <div
-                      key={item.id || index}
-                      className="backdrop-blur-xl bg-white/5 rounded-xl border border-white/10 p-4 hover:bg-white/10 transition-all duration-200 hover:scale-[1.02] cursor-pointer animate-fade-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white/90 truncate">
-                            {item.prompt || 'No prompt'}
-                          </p>
-                          <p className="text-xs text-white/50 mt-1 line-clamp-2">
-                            {item.response || 'No response'}
-                          </p>
-                        </div>
-                        <span className="text-xs text-white/40 whitespace-nowrap">
-                          {item.timestamp ? new Date(item.timestamp).toLocaleTimeString() : '--:--'}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-12 text-white/40">
-                    <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p className="text-sm">No recent activity</p>
-                    <p className="text-xs mt-1">Start recording to see history</p>
-                  </div>
-                )}
-              </div>
+          {/* Activity List */}
+          <div>
+            <div style={{ fontSize: '14px', color: '#94a3b8', padding: '32px 0', textAlign: 'center' }}>
+              Keine Aktivität
             </div>
           </div>
         </div>
-      </main>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out forwards;
-        }
-      `}</style>
+      </div>
     </div>
   );
 }

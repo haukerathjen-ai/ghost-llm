@@ -2,7 +2,7 @@
 // Licensed under the GNU General Public License v3.0
 
 import OpenAI from 'openai';
-import { promises as fs } from 'fs';
+import { promises as fs, createReadStream } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { randomBytes } from 'crypto';
@@ -28,7 +28,6 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
     const tempFileName = `whisper-${randomBytes(16).toString('hex')}.wav`;
     tempFilePath = join(tmpdir(), tempFileName);
     
-    console.log(`[Transcribe] Writing audio buffer to temporary file: ${tempFilePath}`);
     await fs.writeFile(tempFilePath, audioBuffer);
 
     // Attempt transcription with retry logic
@@ -37,20 +36,59 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         console.log(`[Transcribe] Attempt ${attempt}/${MAX_RETRIES} - Sending to Whisper API`);
+        console.log(`[Transcribe] Audio file size: ${audioBuffer.length} bytes`);
         
-        const fileStream = await fs.readFile(tempFilePath);
-        const file = new File([fileStream], tempFileName, { type: 'audio/wav' });
+        // Use createReadStream for Node.js compatibility (File is browser-only)
+        const fileStream = createReadStream(tempFilePath);
         
         const transcription = await openai.audio.transcriptions.create({
-          file: file,
+          file: fileStream,
           model: 'whisper-1',
+          language: 'de', // Explicitly set German language for better accuracy
+          prompt: 'Transkribiere den deutschen Sprachbefehl genau.', // Context hint for Whisper
         });
 
-        const duration = Date.now() - startTime;
-        console.log(`[Transcribe] Successfully transcribed audio in ${duration}ms`);
-        console.log(`[Transcribe] Transcribed text length: ${transcription.text.length} characters`);
+        const transcribedText = transcription.text;
+        console.log(`[Transcribe] Transcription result: "${transcribedText}"`);
 
-        return transcription.text;
+        // Detect Whisper hallucinations (Amara.org, silent audio, etc.)
+        const hallucinationPatterns = [
+          /amara\.org/i,
+          /untertitel/i,
+          /community/i,
+          /subtitle/i,
+          /www\./i,
+        ];
+
+        const isHallucination = hallucinationPatterns.some(pattern => 
+          pattern.test(transcribedText)
+        );
+
+        if (isHallucination) {
+          console.error('');
+          console.error('═══════════════════════════════════════════════════════════');
+          console.error('[Ghost Error] Silent recording detected! Checking Microphone permissions....');
+          console.error('═══════════════════════════════════════════════════════════');
+          console.error('[Ghost Error] Whisper returned hallucination text (typical for silence):');
+          console.error(`[Ghost Error]   "${transcribedText}"`);
+          console.error('');
+          console.error('[Ghost Error] This usually means:');
+          console.error('[Ghost Error]   1. The microphone did not capture any audio');
+          console.error('[Ghost Error]   2. Windows microphone permissions are not granted');
+          console.error('[Ghost Error]   3. Wrong microphone is selected as default in Windows');
+          console.error('[Ghost Error]   4. Microphone is muted or volume is too low');
+          console.error('');
+          console.error('[Ghost Error] Please check:');
+          console.error('[Ghost Error]   - Windows Settings > Privacy > Microphone (enable for apps)');
+          console.error('[Ghost Error]   - Sound Control Panel > Recording > Set correct default mic');
+          console.error('[Ghost Error]   - Test microphone in Windows Sound Recorder first');
+          console.error('═══════════════════════════════════════════════════════════');
+          console.error('');
+          
+          throw new Error('Silent recording detected - no audio captured from microphone');
+        }
+
+        return transcribedText;
 
       } catch (error) {
         lastError = error as Error;
@@ -58,7 +96,6 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
 
         if (attempt < MAX_RETRIES) {
           const delay = RETRY_DELAY_MS * attempt;
-          console.log(`[Transcribe] Retrying in ${delay}ms...`);
           await sleep(delay);
         }
       }
@@ -79,7 +116,6 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
     if (tempFilePath) {
       try {
         await fs.unlink(tempFilePath);
-        console.log(`[Transcribe] Cleaned up temporary file: ${tempFilePath}`);
       } catch (cleanupError) {
         console.error(`[Transcribe] Failed to clean up temporary file:`, cleanupError);
       }

@@ -21,8 +21,8 @@ export class GhostTyper {
 
   constructor(config: GhostTyperConfig = {}) {
     this.config = {
-      typingSpeed: config.typingSpeed ?? 50,
-      initialDelay: config.initialDelay ?? 500,
+      typingSpeed: config.typingSpeed ?? 30, // 30ms between characters for smooth typing
+      initialDelay: config.initialDelay ?? 500, // 0.5 seconds (750ms already in recording.ts)
     };
     this.platform = process.platform;
   }
@@ -64,31 +64,125 @@ export class GhostTyper {
    * Types text on Windows using PowerShell SendKeys
    */
   private async typeTextWindows(text: string): Promise<void> {
-    // Escape special characters for PowerShell
-    const escapedText = text
-      .replace(/\\/g, '\\\\')
-      .replace(/"/g, '`"')
-      .replace(/\$/g, '`$')
-      .replace(/`/g, '``');
+    console.log(`[GhostTyper] Typing ${text.length} characters on Windows`);
+    
+    // Use unique placeholders that won't conflict
+    const NEWLINE = '\x01NL\x01';
+    const LBRACE = '\x01LB\x01';
+    const RBRACE = '\x01RB\x01';
+    const PLUS = '\x01PL\x01';
+    const CARET = '\x01CA\x01';
+    const PERCENT = '\x01PC\x01';
+    const TILDE = '\x01TI\x01';
+    const LBRACKET = '\x01LS\x01';
+    const RBRACKET = '\x01RS\x01';
+    const LPAREN = '\x01LP\x01';
+    const RPAREN = '\x01RP\x01';
+    
+    // Step 1: Replace ALL special chars with unique placeholders FIRST
+    let escapedText = text
+      .replace(/\r?\n/g, NEWLINE)
+      .replace(/\{/g, LBRACE)
+      .replace(/\}/g, RBRACE)
+      .replace(/\+/g, PLUS)
+      .replace(/\^/g, CARET)
+      .replace(/%/g, PERCENT)
+      .replace(/~/g, TILDE)
+      .replace(/\[/g, LBRACKET)
+      .replace(/\]/g, RBRACKET)
+      .replace(/\(/g, LPAREN)
+      .replace(/\)/g, RPAREN);
+    
+    // Escape backticks and single quotes for PowerShell
+    escapedText = escapedText.replace(/'/g, "''");
+    
+    // Step 2: Replace placeholders with SendKeys codes
+    // Order matters! Do this AFTER escaping quotes
+    escapedText = escapedText
+      .replace(/\x01NL\x01/g, '{ENTER}')
+      .replace(/\x01LB\x01/g, '{{}')
+      .replace(/\x01RB\x01/g, '{}}')
+      .replace(/\x01PL\x01/g, '{+}')
+      .replace(/\x01CA\x01/g, '{^}')
+      .replace(/\x01PC\x01/g, '{%}')
+      .replace(/\x01TI\x01/g, '{~}')
+      .replace(/\x01LS\x01/g, '{[}')
+      .replace(/\x01RS\x01/g, '{]}')
+      .replace(/\x01LP\x01/g, '{(}')
+      .replace(/\x01RP\x01/g, '{)}');
 
     // Split text into chunks to avoid command length limits
-    const chunkSize = 100;
-    const chunks = this.splitIntoChunks(escapedText, chunkSize);
+    // Be careful not to split in the middle of a {KEY} sequence
+    const chunks = this.splitIntoSendKeysChunks(escapedText, 35);
 
-    for (const chunk of chunks) {
-      // Create PowerShell script that uses SendKeys
-      const psScript = `
-        Add-Type -AssemblyName System.Windows.Forms
-        $text = "${chunk}"
-        foreach ($char in $text.ToCharArray()) {
-          [System.Windows.Forms.SendKeys]::SendWait($char.ToString())
-          Start-Sleep -Milliseconds ${this.config.typingSpeed}
-        }
-      `;
+    console.log(`[GhostTyper] Split into ${chunks.length} chunks`);
 
-      // Execute PowerShell script
-      await execAsync(`powershell -NoProfile -Command "${psScript.replace(/"/g, '\\"')}"`);
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      console.log(`[GhostTyper] Typing chunk ${i + 1}/${chunks.length}: "${chunk.substring(0, 30)}..."`);
+      
+      // Create PowerShell script that sends the whole chunk at once
+      const psScript = `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${chunk}')`;
+
+      try {
+        // Execute PowerShell script using single quotes
+        await execAsync(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${psScript}"`, {
+          timeout: 30000,
+        });
+        
+        // Small delay between chunks
+        await this.delay(30);
+      } catch (error) {
+        console.error(`[GhostTyper] Error typing chunk ${i + 1}:`, error);
+        throw error;
+      }
     }
+  }
+
+  /**
+   * Split text into chunks without breaking SendKeys sequences like {ENTER}
+   */
+  private splitIntoSendKeysChunks(text: string, maxChunkSize: number): string[] {
+    const chunks: string[] = [];
+    let currentChunk = '';
+    let i = 0;
+    
+    while (i < text.length) {
+      // Check if we're at the start of a SendKeys sequence
+      if (text[i] === '{') {
+        // Find the closing brace
+        const closeIndex = text.indexOf('}', i);
+        if (closeIndex !== -1) {
+          const sequence = text.substring(i, closeIndex + 1);
+          
+          // If adding this sequence would exceed max, start new chunk
+          if (currentChunk.length + sequence.length > maxChunkSize && currentChunk.length > 0) {
+            chunks.push(currentChunk);
+            currentChunk = '';
+          }
+          
+          currentChunk += sequence;
+          i = closeIndex + 1;
+          continue;
+        }
+      }
+      
+      // Regular character
+      if (currentChunk.length >= maxChunkSize) {
+        chunks.push(currentChunk);
+        currentChunk = '';
+      }
+      
+      currentChunk += text[i];
+      i++;
+    }
+    
+    // Don't forget the last chunk
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk);
+    }
+    
+    return chunks;
   }
 
   /**
@@ -166,16 +260,20 @@ export class GhostTyper {
    */
   async pasteText(text: string): Promise<void> {
     try {
-      console.log('[GhostTyper] Pasting text via clipboard...');
+      console.log(`[GhostTyper] Pasting ${text.length} characters via clipboard...`);
 
-      // Wait for focus switch
-      await this.delay(this.config.initialDelay);
+      // NO initial delay - recording.ts already waits 750ms
+      // The target application should already have focus
 
       // Save current clipboard content
       const previousClipboard = clipboard.readText();
 
       // Copy text to clipboard
       clipboard.writeText(text);
+      console.log('[GhostTyper] Text copied to clipboard');
+
+      // Small delay to ensure clipboard is updated
+      await this.delay(100);
 
       // Simulate Ctrl+V / Cmd+V using OS-specific commands
       switch (this.platform) {
@@ -192,8 +290,10 @@ export class GhostTyper {
           throw new Error(`Unsupported platform: ${this.platform}`);
       }
 
-      // Restore previous clipboard content after a short delay
-      await this.delay(100);
+      // Wait a bit before restoring clipboard
+      await this.delay(500);
+      
+      // Restore previous clipboard content
       clipboard.writeText(previousClipboard);
 
       console.log('[GhostTyper] Text pasted successfully');
@@ -203,14 +303,19 @@ export class GhostTyper {
   }
 
   /**
-   * Simulates Ctrl+V on Windows
+   * Simulates Ctrl+V on Windows using PowerShell
    */
   private async pasteWindows(): Promise<void> {
-    const psScript = `
-      Add-Type -AssemblyName System.Windows.Forms
-      [System.Windows.Forms.SendKeys]::SendWait("^v")
-    `;
-    await execAsync(`powershell -NoProfile -Command "${psScript}"`);
+    console.log('[GhostTyper] Sending Ctrl+V on Windows...');
+    
+    // Use a simpler, more direct approach
+    const psScript = `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^v')`;
+    
+    await execAsync(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${psScript}"`, {
+      timeout: 5000,
+    });
+    
+    console.log('[GhostTyper] Ctrl+V sent');
   }
 
   /**
