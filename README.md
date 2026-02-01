@@ -21,7 +21,7 @@ Ghost LLM represents a groundbreaking experiment in human-AI collaboration. **10
 - **Local Whisper Large-v3** with GPU acceleration (CUDA)
 - **Automatic Cloud Fallback** when GPU is unavailable
 - Support for multiple languages (optimized for German)
-- Hotkey-activated recording (Ctrl+Shift+G / Ctrl+Alt+G / F9)
+- Hotkey-activated recording (Ctrl+Shift+G)
 
 ### 👁️ **Vision-Context Awareness**
 - Automatic screenshot capture during voice commands
@@ -31,7 +31,7 @@ Ghost LLM represents a groundbreaking experiment in human-AI collaboration. **10
 
 ### ⌨️ **Ghost Typing**
 - Seamless text insertion directly into active applications
-- Natural typing simulation with configurable speed
+- Natural typing simulation with configurable speed 
 - No clipboard pollution - types character by character
 - Works with any application (IDE, browser, text editor)
 
