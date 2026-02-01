@@ -136,22 +136,23 @@ export class RecordingManager extends EventEmitter {
       this.emit('activity', { timestamp: new Date(), action: 'Screenshot erstellt' });
 
       // Step 3: Transcribe audio using Whisper (German-optimized)
-      this.emit('status', { state: 'processing', message: '☁️ Transkribiere (DE)...' });
-      this.emit('activity', { timestamp: new Date(), action: '☁️ Transkribiere (DE)...' });
+      this.emit('status', { state: 'transcribing', message: '🎤 Transkribiere...' });
+      this.emit('activity', { timestamp: new Date(), action: '🎤 Transkribiere...' });
       const transcribedText = await transcribeAudio(audioBuffer);
       this.emit('activity', { timestamp: new Date(), action: '✅ Transkription abgeschlossen' });
 
       // Step 4: Enrich with Claude Vision (sends both text and screenshot)
-      this.emit('status', { state: 'processing', message: '🧠 Claude denkt nach...' });
+      this.emit('status', { state: 'enriching', message: '🧠 Claude denkt...' });
+      this.emit('activity', { timestamp: new Date(), action: '🧠 Claude analysiert...' });
       const enrichedText = await enrichTextWithVision(
         transcribedText,
         screenshot,
         this.config.strategyId
       );
-      this.emit('activity', { timestamp: new Date(), action: 'Analyse abgeschlossen' });
+      this.emit('activity', { timestamp: new Date(), action: '✅ Analyse abgeschlossen' });
 
       // Step 5: Ghost type the result
-      this.emit('status', { state: 'processing', message: '⌨️ Tippe...' });
+      this.emit('status', { state: 'typing', message: '⌨️ Tippe...' });
       this.emit('activity', { timestamp: new Date(), action: '⌨️ Tippe Antwort...' });
       
       // Set typing speed if configured
@@ -187,13 +188,8 @@ export class RecordingManager extends EventEmitter {
       this.state = 'idle';
       this.handleError(error as Error);
       
-      // Ghost Talk: Type error message directly into active window
-      try {
-        const errorMessage = (error as Error).message || 'Unknown error';
-        await ghostTyper.typeText(`!! Ghost Error: ${errorMessage} !!`);
-      } catch (typingError) {
-        console.error('[RecordingManager] Could not type error message:', typingError);
-      }
+      // SAFE ERROR REPORTING: Send error via IPC to Dashboard (no typing into active app!)
+      // The error is already emitted via handleError() above
       
       this.emit('status', { state: 'idle', message: '❌ Fehler aufgetreten' });
     }

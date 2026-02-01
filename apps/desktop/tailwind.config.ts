@@ -9,7 +9,16 @@ const config: Config = {
     './components/**/*.{js,ts,jsx,tsx,mdx}'
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        border: '#1e293b',
+        background: '#0a0a0a',
+        foreground: '#ffffff',
+      },
+      borderColor: {
+        DEFAULT: '#1e293b',
+      },
+    },
   },
   plugins: [],
 };

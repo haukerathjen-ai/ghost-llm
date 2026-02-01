@@ -14,6 +14,19 @@ import type {
   ActivityLogEntry,
 } from '@shared/types';
 
+// Error event interface
+interface GhostError {
+  message: string;
+  name: string;
+  timestamp: string;
+}
+
+// Abort event interface
+interface GhostAbortedEvent {
+  timestamp: string;
+  message: string;
+}
+
 interface GhostAPI {
   // Recording
   startRecording: () => Promise<void>;
@@ -33,6 +46,12 @@ interface GhostAPI {
   
   // Activity Log
   onActivityLog: (callback: (entry: ActivityLogEntry) => void) => () => void;
+  
+  // Error handling (Safe Error Reporting)
+  onGhostError: (callback: (error: GhostError) => void) => () => void;
+  
+  // Emergency Stop
+  onGhostAborted: (callback: (event: GhostAbortedEvent) => void) => () => void;
   
   // System checks
   checkSoxAvailable: () => Promise<boolean>;

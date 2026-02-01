@@ -43,9 +43,25 @@ Ghost LLM represents a groundbreaking experiment in human-AI collaboration. **10
 
 ### 🎨 **Modern Dashboard**
 - Real-time status monitoring
+- **Pipeline Progress Indicator** with visual feedback for each processing phase
 - System health indicators (Audio Engine, API connectivity)
 - Recording history and activity tracking
 - Elegant UI with glassmorphism design
+
+### 🛑 **Emergency Stop**
+- Press `F10` at any time to **immediately abort Ghost-Typing**
+- Prevents unwanted text injection if transcription was misunderstood
+- Visual feedback in Dashboard when aborted
+
+### 🛡️ **Safe Error Handling**
+- Errors are displayed as **non-intrusive Toast notifications** in the Dashboard
+- **No risk of error messages being typed** into your code or documents
+- Auto-dismiss after 8 seconds, or click to close immediately
+
+### 💾 **Persistent Settings**
+- All configuration (transcription mode, model size, typing speed) is **automatically saved**
+- Settings persist across app restarts via electron-store
+- No need to reconfigure after updates
 
 ---
 

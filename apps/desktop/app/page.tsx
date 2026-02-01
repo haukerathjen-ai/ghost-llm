@@ -11,7 +11,7 @@ import RecordingButton from '@/components/RecordingButton';
 import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
-  const { status, isRecording, startRecording, stopRecording, activityLog } = useElectronIPC();
+  const { status, isRecording, startRecording, stopRecording, activityLog, pipelineStatus, errorMessage, clearError } = useElectronIPC();
   const [soxAvailable, setSoxAvailable] = useState<boolean | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>('System bereit');
   const [apiKeysOk, setApiKeysOk] = useState<boolean | null>(null);
@@ -53,8 +53,47 @@ export default function DashboardPage() {
     return `${hours}:${minutes}`;
   };
 
+  // Get current pipeline phase for visual feedback
+  const getPipelinePhase = () => {
+    if (!pipelineStatus) return 'idle';
+    return pipelineStatus.state;
+  };
+
+  const pipelinePhases = ['recording', 'transcribing', 'enriching', 'typing'];
+  const currentPhase = getPipelinePhase();
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: '#ffffff' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: '#ffffff', position: 'relative' }}>
+      {/* Error Toast (Safe Error Reporting) */}
+      {errorMessage && (
+        <div 
+          onClick={clearError}
+          style={{ 
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            backgroundColor: '#dc2626',
+            color: '#ffffff',
+            padding: '16px 20px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            zIndex: 1000,
+            maxWidth: '400px',
+            cursor: 'pointer',
+            animation: 'slideIn 0.3s ease-out'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <span style={{ fontSize: '18px' }}>❌</span>
+            <div>
+              <div style={{ fontWeight: '600', marginBottom: '4px' }}>Fehler</div>
+              <div style={{ fontSize: '13px', opacity: 0.9 }}>{errorMessage}</div>
+              <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '8px' }}>Klicken zum Schließen</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Centered Container */}
       <div style={{ maxWidth: '768px', margin: '0 auto', padding: '80px 24px' }}>
         {/* Header */}
@@ -104,10 +143,65 @@ export default function DashboardPage() {
             Status
           </h2>
           <StatusIndicator status={status} size="medium" />
+          
+          {/* Pipeline Progress (Visual Feedback) */}
+          {currentPhase !== 'idle' && (
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #1e293b' }}>
+              <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Pipeline-Status
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {pipelinePhases.map((phase, index) => {
+                  const isActive = phase === currentPhase;
+                  const isPast = pipelinePhases.indexOf(currentPhase) > index;
+                  return (
+                    <div key={phase} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        backgroundColor: isActive ? '#3b82f6' : isPast ? '#10b981' : '#1e293b',
+                        color: isActive || isPast ? '#ffffff' : '#64748b',
+                        transition: 'all 0.3s ease',
+                        animation: isActive ? 'pulse 1.5s infinite' : 'none',
+                      }}>
+                        {phase === 'recording' && '🎙️'}
+                        {phase === 'transcribing' && '🎤'}
+                        {phase === 'enriching' && '🧠'}
+                        {phase === 'typing' && '⌨️'}
+                      </div>
+                      {index < pipelinePhases.length - 1 && (
+                        <div style={{
+                          width: '24px',
+                          height: '2px',
+                          backgroundColor: isPast ? '#10b981' : '#1e293b',
+                          transition: 'background-color 0.3s ease',
+                        }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: '12px', fontSize: '13px', color: '#94a3b8' }}>
+                {pipelineStatus?.message || 'Verarbeite...'}
+              </div>
+            </div>
+          )}
+          
           <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #1e293b' }}>
             <p style={{ fontSize: '14px', color: '#94a3b8' }}>
               {statusMessage}
             </p>
+            {/* Emergency Stop Hint */}
+            {currentPhase === 'typing' && (
+              <p style={{ fontSize: '12px', color: '#f59e0b', marginTop: '8px' }}>
+                💡 Tipp: Drücke <strong>F10</strong> zum Abbrechen (Emergency Stop)
+              </p>
+            )}
           </div>
         </div>
 

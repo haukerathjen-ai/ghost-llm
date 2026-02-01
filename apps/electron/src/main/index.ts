@@ -7,6 +7,8 @@ import { spawn, exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import { ghostTyper } from './modules/ghost';
 import { getRecordingManager } from './modules/recording';
+import { getStore } from './modules/store';
+import { DEFAULT_SETTINGS } from '@shared/config/defaults';
 
 const execAsync = promisify(exec);
 
@@ -96,6 +98,34 @@ function registerGlobalShortcuts() {
     // STEALTH MODE: Do NOT focus window - let user keep focus on target application
     // The dashboard updates via IPC without stealing focus
   };
+
+  // EMERGENCY STOP: F10 aborts typing immediately
+  const escapeHandler = async () => {
+    if (ghostTyper.isTyping()) {
+      console.log('[Ghost LLM] 🛑 Emergency Stop triggered (F10)');
+      await ghostTyper.abort();
+      
+      // Notify dashboard about abort
+      if (mainWindow) {
+        mainWindow.webContents.send('ghost:aborted', { 
+          timestamp: new Date().toISOString(),
+          message: 'Typing aborted by user (F10)'
+        });
+        mainWindow.webContents.send('ghost:status-change', { 
+          state: 'idle', 
+          message: '🛑 Abgebrochen' 
+        });
+      }
+    }
+  };
+  
+  // Register F10 for Emergency Stop
+  const f10Ret = globalShortcut.register('F10', escapeHandler);
+  if (f10Ret) {
+    console.log('[Ghost LLM] 🛑 Emergency Stop registered: F10');
+  } else {
+    console.warn('[Ghost LLM] Failed to register F10 for Emergency Stop');
+  }
 
   // Try to register primary shortcut: Ctrl+Shift+G
   let ret = globalShortcut.register('CommandOrControl+Shift+G', hotkeyHandler);
@@ -285,27 +315,40 @@ function registerIPCHandlers() {
     return [];
   });
 
-  // Get settings (placeholder)
+  // Get settings (persistent via electron-store)
   ipcMain.handle('settings:get', async () => {
-    // TODO: Implement settings storage with electron-store
+    const store = getStore();
+    const settings = store.getSettings();
+    // Merge with defaults to ensure all fields exist
     return {
-      typingSpeed: 50,
-      beepVolume: 75,
-      theme: 'dark',
+      ...DEFAULT_SETTINGS,
+      ...settings,
     };
   });
 
-  // Save settings (placeholder)
+  // Save settings (persistent via electron-store)
   ipcMain.handle('settings:save', async (_event, settings) => {
-    // TODO: Implement settings storage with electron-store
+    const store = getStore();
+    
+    // Save all settings to electron-store
+    store.saveSettings(settings);
+    console.log('[Settings] Saved:', settings);
+    
+    // Apply typing speed immediately
     if (recordingManager && settings.typingSpeed) {
       recordingManager.setTypingSpeed(settings.typingSpeed);
     }
-    // Store transcription settings
+    
+    // Apply transcription settings to store (for transcribe.ts to read)
     if (settings.transcriptionMode) {
-      // TODO: Store to electron-store
+      store.set('transcriptionMode', settings.transcriptionMode);
     }
-    // TODO: Store beepVolume and theme settings
+    if (settings.localWhisperModel) {
+      store.set('localWhisperModel', settings.localWhisperModel);
+    }
+    if (settings.whisperCpuThreads) {
+      store.set('whisperCpuThreads', settings.whisperCpuThreads);
+    }
   });
 
   // Get local transcription capabilities

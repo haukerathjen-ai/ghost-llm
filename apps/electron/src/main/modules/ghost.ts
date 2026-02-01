@@ -17,6 +17,8 @@ interface GhostTyperConfig {
 export class GhostTyper {
   private config: Required<GhostTyperConfig>;
   private platform: NodeJS.Platform;
+  private abortController: AbortController | null = null;
+  private _isTyping: boolean = false;
 
   constructor(config: GhostTyperConfig = {}) {
     this.config = {
@@ -27,16 +29,45 @@ export class GhostTyper {
   }
 
   /**
+   * Aborts the current typing operation immediately
+   * Called when user presses Escape key
+   */
+  async abort(): Promise<void> {
+    if (this.abortController) {
+      this.abortController.abort();
+      this._isTyping = false;
+      console.log('[GhostTyper] ❌ Typing aborted by user (Emergency Stop)');
+    }
+  }
+
+  /**
+   * Returns whether Ghost is currently typing
+   */
+  isTyping(): boolean {
+    return this._isTyping;
+  }
+
+  /**
    * Types text character by character using OS-native commands
+   * Supports abort via Escape key (Emergency Stop)
    * @param text Text to type
-   * @throws Error if typing fails or platform is unsupported
+   * @throws Error if typing fails, platform is unsupported, or aborted
    */
   async typeText(text: string): Promise<void> {
+    // Initialize abort controller for this typing session
+    this.abortController = new AbortController();
+    this._isTyping = true;
+
     try {
       console.log('[GhostTyper] Starting text typing...');
 
       // Wait for focus switch (user switches to target application)
       await this.delay(this.config.initialDelay);
+
+      // Check if aborted during initial delay
+      if (this.abortController.signal.aborted) {
+        throw new Error('Typing aborted by user');
+      }
 
       // Use platform-specific typing method
       switch (this.platform) {
@@ -55,7 +86,14 @@ export class GhostTyper {
 
       console.log('[GhostTyper] Text typing completed successfully');
     } catch (error) {
+      if (this.abortController?.signal.aborted) {
+        console.log('[GhostTyper] Typing was aborted');
+        return; // Don't throw, just exit gracefully
+      }
       this.handleError(error, 'typeText');
+    } finally {
+      this._isTyping = false;
+      this.abortController = null;
     }
   }
 
@@ -117,6 +155,12 @@ export class GhostTyper {
     console.log(`[GhostTyper] Split into ${chunks.length} chunks`);
 
     for (let i = 0; i < chunks.length; i++) {
+      // Check for abort between chunks (Emergency Stop)
+      if (this.abortController?.signal.aborted) {
+        console.log(`[GhostTyper] Typing aborted at chunk ${i + 1}/${chunks.length}`);
+        return;
+      }
+
       const chunk = chunks[i];
       console.log(`[GhostTyper] Typing chunk ${i + 1}/${chunks.length}: "${chunk.substring(0, 30)}..."`);
       

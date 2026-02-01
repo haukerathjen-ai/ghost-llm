@@ -5,12 +5,20 @@
 
 export interface AppSettings {
   typingSpeed: number;
-  theme: 'dark' | 'light';
+  beepVolume: number;
+  theme: 'dark' | 'darker';
+  transcriptionMode: 'local' | 'cloud' | 'auto';
+  localWhisperModel: 'tiny' | 'base' | 'small' | 'medium' | 'large' | 'large-v3';
+  whisperCpuThreads: number;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  typingSpeed: 100,
-  theme: 'dark'
+  typingSpeed: 50,
+  beepVolume: 75,
+  theme: 'dark',
+  transcriptionMode: 'auto',
+  localWhisperModel: 'large-v3',
+  whisperCpuThreads: 8,
 };
 
 export const HOTKEY_ACCELERATOR = 'CommandOrControl+Shift+G';

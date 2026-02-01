@@ -12,15 +12,31 @@ import type {
   ActivityLogEntry,
 } from '@shared/types';
 
+// Extended status with pipeline phase
+interface PipelineStatus {
+  state: string;
+  message: string;
+}
+
+// Error interface
+interface GhostError {
+  message: string;
+  name: string;
+  timestamp: string;
+}
+
 interface UseElectronIPCReturn {
   isRecording: boolean;
   status: RecordingStatus | null;
+  pipelineStatus: PipelineStatus | null;
   currentTranscription: TranscriptionResult | null;
   history: HistoryEntry[];
   historyPreview: HistoryEntry[];
   settings: AppSettings | null;
   strategy: string | null;
   activityLog: ActivityLogEntry[];
+  errorMessage: string | null;
+  clearError: () => void;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   setStrategy: (strategy: string) => Promise<void>;
@@ -30,13 +46,20 @@ interface UseElectronIPCReturn {
 export function useElectronIPC(): UseElectronIPCReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [status, setStatus] = useState<RecordingStatus | null>(null);
+  const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
   const [currentTranscription, setCurrentTranscription] = useState<TranscriptionResult | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Check if Electron API is available
   const isElectronAvailable = typeof window !== 'undefined' && window.ghostAPI;
+
+  // Clear error message
+  const clearError = useCallback(() => {
+    setErrorMessage(null);
+  }, []);
 
   // Event handlers
   useEffect(() => {
@@ -67,10 +90,39 @@ export function useElectronIPC(): UseElectronIPCReturn {
       });
     };
 
+    // Pipeline status listener (for visual feedback)
+    const handleStatusChange = (statusUpdate: any) => {
+      setPipelineStatus({
+        state: statusUpdate.state || 'idle',
+        message: statusUpdate.message || '',
+      });
+      // Also update simple recording status
+      if (statusUpdate.state === 'recording') {
+        setIsRecording(true);
+      } else if (statusUpdate.state === 'idle') {
+        setIsRecording(false);
+      }
+    };
+
+    // Error listener (Safe Error Reporting)
+    const handleGhostError = (error: GhostError) => {
+      setErrorMessage(error.message);
+      // Auto-clear error after 8 seconds
+      setTimeout(() => setErrorMessage(null), 8000);
+    };
+
+    // Abort listener (Emergency Stop)
+    const handleGhostAborted = () => {
+      setPipelineStatus({ state: 'idle', message: '🛑 Abgebrochen' });
+      setIsRecording(false);
+    };
+
     // Subscribe to events and store cleanup functions
     const cleanupRecordingStatus = window.ghostAPI.onRecordingStatus(handleRecordingStatus);
     const cleanupTranscriptionComplete = window.ghostAPI.onTranscriptionComplete(handleTranscriptionComplete);
     const cleanupActivityLog = window.ghostAPI.onActivityLog(handleActivityLog);
+    const cleanupGhostError = window.ghostAPI.onGhostError(handleGhostError);
+    const cleanupGhostAborted = window.ghostAPI.onGhostAborted(handleGhostAborted);
 
     // Load initial data
     loadInitialData();
@@ -80,6 +132,8 @@ export function useElectronIPC(): UseElectronIPCReturn {
       cleanupRecordingStatus();
       cleanupTranscriptionComplete();
       cleanupActivityLog();
+      cleanupGhostError();
+      cleanupGhostAborted();
     };
   }, [isElectronAvailable]);
 
@@ -167,12 +221,15 @@ export function useElectronIPC(): UseElectronIPCReturn {
   return {
     isRecording,
     status,
+    pipelineStatus,
     currentTranscription,
     history,
     historyPreview: history,
     settings,
     strategy: null, // Strategy is managed separately, not part of AppSettings
     activityLog,
+    errorMessage,
+    clearError,
     startRecording,
     stopRecording,
     setStrategy,

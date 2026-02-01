@@ -28,6 +28,10 @@ interface StoreSchema {
   history: TranscriptionRecord[];
   settings: AppSettings;
   activeStrategy: string;
+  // Transcription settings (stored separately for transcribe.ts to read directly)
+  transcriptionMode: 'local' | 'cloud' | 'auto';
+  localWhisperModel: string;
+  whisperCpuThreads: number;
 }
 
 export class AppStore {
@@ -62,6 +66,18 @@ export class AppStore {
         activeStrategy: {
           type: 'string',
           default: 'default',
+        },
+        transcriptionMode: {
+          type: 'string',
+          default: 'auto',
+        },
+        localWhisperModel: {
+          type: 'string',
+          default: 'large-v3',
+        },
+        whisperCpuThreads: {
+          type: 'number',
+          default: 8,
         },
       },
     });

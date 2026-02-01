@@ -11,6 +11,19 @@ import type {
   ActivityLogEntry
 } from '@shared/types';
 
+// Error event interface
+export interface GhostError {
+  message: string;
+  name: string;
+  timestamp: string;
+}
+
+// Abort event interface
+export interface GhostAbortedEvent {
+  timestamp: string;
+  message: string;
+}
+
 // Define the API interface that will be exposed to the renderer
 export interface GhostAPI {
   send: (channel: string, ...args: any[]) => void;
@@ -19,6 +32,8 @@ export interface GhostAPI {
   onRecordingStatus: (callback: (status: RecordingStatus) => void) => () => void;
   onTranscriptionComplete: (callback: (result: TranscriptionResult) => void) => () => void;
   onActivityLog: (callback: (entry: ActivityLogEntry) => void) => () => void;
+  onGhostError: (callback: (error: GhostError) => void) => () => void;
+  onGhostAborted: (callback: (event: GhostAbortedEvent) => void) => () => void;
   getHistory: () => Promise<HistoryEntry[]>;
   setStrategy: (strategyId: string) => Promise<void>;
   getSettings: () => Promise<AppSettings>;
@@ -90,6 +105,34 @@ const ghostAPI: GhostAPI = {
     // Return cleanup function
     return () => {
       ipcRenderer.removeListener('ghost:activity-log', listener);
+    };
+  },
+
+  // Listen for error events (Safe Error Reporting)
+  onGhostError: (callback: (error: GhostError) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, error: GhostError) => {
+      callback(error);
+    };
+
+    ipcRenderer.on('ghost:error', listener);
+
+    // Return cleanup function
+    return () => {
+      ipcRenderer.removeListener('ghost:error', listener);
+    };
+  },
+
+  // Listen for abort events (Emergency Stop)
+  onGhostAborted: (callback: (event: GhostAbortedEvent) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, abortEvent: GhostAbortedEvent) => {
+      callback(abortEvent);
+    };
+
+    ipcRenderer.on('ghost:aborted', listener);
+
+    // Return cleanup function
+    return () => {
+      ipcRenderer.removeListener('ghost:aborted', listener);
     };
   },
 
