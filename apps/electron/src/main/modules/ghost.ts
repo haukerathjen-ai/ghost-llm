@@ -92,10 +92,14 @@ export class GhostTyper {
       .replace(/\(/g, LPAREN)
       .replace(/\)/g, RPAREN);
     
-    // Escape backticks and single quotes for PowerShell
+    // Escape backticks first (PowerShell escape character)
+    escapedText = escapedText.replace(/`/g, '``');
+    // Escape single quotes for PowerShell
     escapedText = escapedText.replace(/'/g, "''");
     // Escape double quotes for PowerShell using backtick
     escapedText = escapedText.replace(/"/g, '`"');
+    // Escape pipe character for PowerShell
+    escapedText = escapedText.replace(/\|/g, '`|');
     
     // Step 2: Replace placeholders with SendKeys codes
     // Order matters! Do this AFTER escaping quotes
