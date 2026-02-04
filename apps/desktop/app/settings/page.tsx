@@ -124,85 +124,167 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#94a3b8' }}>Lädt Einstellungen...</div>
+      <div style={{ minHeight: '100vh', backgroundColor: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{
+          color: '#6b7280',
+          fontSize: '15px',
+        }}>
+          Lädt Einstellungen...
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: '#ffffff' }}>
-      <div style={{ maxWidth: '768px', margin: '0 auto', padding: '80px 24px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#fafafa', color: '#111827' }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '60px 24px' }}>
         {/* Header */}
-        <header style={{ marginBottom: '64px' }}>
+        <header style={{ marginBottom: '48px' }}>
           <button
             onClick={() => router.push("/")}
-            style={{ color: '#94a3b8', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}
+            style={{
+              color: '#6b7280',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'none',
+              border: 'none',
+              padding: '8px 0',
+              cursor: 'pointer',
+              fontSize: '14px',
+              transition: 'color 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#111827';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#6b7280';
+            }}
           >
             <span>←</span>
             <span>Zurück</span>
           </button>
-          <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#ffffff' }}>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            color: '#111827',
+            marginBottom: '8px',
+            letterSpacing: '-0.025em',
+          }}>
             Einstellungen
           </h1>
+          <p style={{
+            fontSize: '15px',
+            color: '#6b7280',
+          }}>
+            Konfiguriere deine Ghost LLM Installation
+          </p>
         </header>
 
         <form onSubmit={handleSubmit}>
           {/* API Status Section */}
-          <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '20px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          }}>
+            <h2 style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '8px',
+            }}>
               API-Verbindung
             </h2>
-            <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>
+            <p style={{
+              fontSize: '13px',
+              color: '#6b7280',
+              marginBottom: '20px',
+            }}>
               Konfiguriert über .env-Datei im Root-Ordner
-            </div>
-            
+            </p>
+
             {/* OpenAI Status */}
-            <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ 
-                width: '8px', 
-                height: '8px', 
-                borderRadius: '50%', 
+            <div style={{
+              marginBottom: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px',
+              backgroundColor: '#f9fafb',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
+            }}>
+              <div style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
                 backgroundColor: apiKeyStatus.openai ? '#10b981' : '#ef4444',
                 flexShrink: 0
               }}></div>
               <div>
-                <div style={{ fontSize: '14px', color: '#ffffff' }}>
-                  OpenAI {apiKeyStatus.openai ? '✅' : '❌'}
+                <div style={{
+                  fontSize: '14px',
+                  color: '#111827',
+                  fontWeight: '500',
+                }}>
+                  OpenAI {apiKeyStatus.openai ? '✓' : '✗'}
                 </div>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                <div style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                }}>
                   {apiKeyStatus.openai ? 'Verbunden' : 'Nicht konfiguriert'}
                 </div>
               </div>
             </div>
 
             {/* Anthropic Status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ 
-                width: '8px', 
-                height: '8px', 
-                borderRadius: '50%', 
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px',
+              backgroundColor: '#f9fafb',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
+            }}>
+              <div style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
                 backgroundColor: apiKeyStatus.anthropic ? '#10b981' : '#ef4444',
                 flexShrink: 0
               }}></div>
               <div>
-                <div style={{ fontSize: '14px', color: '#ffffff' }}>
-                  Anthropic {apiKeyStatus.anthropic ? '✅' : '❌'}
+                <div style={{
+                  fontSize: '14px',
+                  color: '#111827',
+                  fontWeight: '500',
+                }}>
+                  Anthropic {apiKeyStatus.anthropic ? '✓' : '✗'}
                 </div>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                <div style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                }}>
                   {apiKeyStatus.anthropic ? 'Verbunden' : 'Nicht konfiguriert'}
                 </div>
               </div>
             </div>
 
             {(!apiKeyStatus.openai || !apiKeyStatus.anthropic) && (
-              <div style={{ 
-                marginTop: '16px', 
-                padding: '12px', 
-                backgroundColor: '#ef444420', 
-                border: '1px solid #ef4444', 
-                fontSize: '12px', 
-                color: '#fca5a5' 
+              <div style={{
+                marginTop: '16px',
+                padding: '12px',
+                backgroundColor: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: '#dc2626',
               }}>
                 ⚠️ Fügen Sie Ihre API-Keys in die .env-Datei ein und starten Sie die App neu.
               </div>
@@ -210,16 +292,50 @@ export default function SettingsPage() {
           </div>
 
           {/* Hotkey Configuration */}
-          <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '20px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          }}>
+            <h2 style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '16px',
+            }}>
               Tastenkombinationen
             </h2>
-            <div style={{ backgroundColor: '#0a0a0a', border: '1px solid #1e293b', padding: '16px' }}>
+            <div style={{
+              backgroundColor: '#f9fafb',
+              borderRadius: '8px',
+              padding: '16px',
+              border: '1px solid #e5e7eb',
+            }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontSize: '14px', color: '#ffffff', marginBottom: '4px' }}>Ghost aufrufen</div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                    Aktuell: <span style={{ color: '#ffffff' }}>Cmd+Shift+G</span>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#111827',
+                    marginBottom: '4px',
+                    fontWeight: '500'
+                  }}>
+                    Ghost aufrufen
+                  </div>
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#6b7280',
+                  }}>
+                    Aktuell: <span style={{
+                      color: '#111827',
+                      fontWeight: '600',
+                      padding: '4px 8px',
+                      backgroundColor: '#e5e7eb',
+                      borderRadius: '4px',
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                    }}>Cmd+Shift+G</span>
                   </div>
                 </div>
               </div>
@@ -227,16 +343,43 @@ export default function SettingsPage() {
           </div>
 
           {/* Typing Speed */}
-          <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '20px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          }}>
+            <h2 style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '16px',
+            }}>
               Tippgeschwindigkeit
             </h2>
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <label style={{ fontSize: '14px', color: '#ffffff' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '12px'
+              }}>
+                <label style={{
+                  fontSize: '14px',
+                  color: '#374151',
+                }}>
                   Verzögerung zwischen Zeichen
                 </label>
-                <span style={{ fontSize: '14px', color: '#94a3b8' }}>
+                <span style={{
+                  fontSize: '14px',
+                  color: '#111827',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: '6px',
+                  fontFamily: 'monospace',
+                }}>
                   {formData.typingSpeed}ms
                 </span>
               </div>
@@ -247,9 +390,19 @@ export default function SettingsPage() {
                 step="10"
                 value={formData.typingSpeed}
                 onChange={(e) => handleInputChange("typingSpeed", parseInt(e.target.value))}
-                style={{ width: '100%', height: '4px', backgroundColor: '#0a0a0a', cursor: 'pointer' }}
+                style={{
+                  width: '100%',
+                  height: '6px',
+                  cursor: 'pointer',
+                }}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '12px',
+                color: '#6b7280',
+                marginTop: '8px',
+              }}>
                 <span>Schnell (50ms)</span>
                 <span>Langsam (200ms)</span>
               </div>
@@ -257,59 +410,155 @@ export default function SettingsPage() {
           </div>
 
           {/* Transcription Mode */}
-          <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8' }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '20px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
+              <h2 style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#111827',
+              }}>
                 Transkription
               </h2>
-              <span style={{ 
-                fontSize: '14px', 
-                padding: '4px 12px', 
-                backgroundColor: '#3b82f620', 
-                color: '#60a5fa', 
-                border: '1px solid #3b82f6',
-                borderRadius: '4px',
+              <span style={{
+                fontSize: '11px',
+                padding: '4px 10px',
+                backgroundColor: '#dbeafe',
+                color: '#1e40af',
+                borderRadius: '6px',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                fontWeight: '500'
+                letterSpacing: '0.5px',
+                fontWeight: '600',
               }}>
                 Vorschau
               </span>
             </div>
-            
+
             {/* System Status */}
             {isCheckingCapabilities ? (
-              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>
+              <div style={{
+                fontSize: '13px',
+                color: '#6b7280',
+                marginBottom: '20px',
+              }}>
                 Prüfe System-Voraussetzungen...
               </div>
             ) : localCapabilities && (
-              <div style={{ marginBottom: '16px', backgroundColor: '#0a0a0a', border: '1px solid #1e293b', padding: '12px' }}>
-                <div style={{ fontSize: '12px', fontWeight: '500', color: '#94a3b8', marginBottom: '8px' }}>
-                  🔍 System-Status
+              <div style={{
+                marginBottom: '20px',
+                backgroundColor: '#f9fafb',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                padding: '16px'
+              }}>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '12px',
+                }}>
+                  System-Status
                 </div>
-                <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>{localCapabilities.pythonAvailable ? '✅' : '❌'}</span>
-                    <span>Python {localCapabilities.pythonAvailable ? `(${localCapabilities.pythonVersion})` : 'nicht installiert'}</span>
+                <div style={{
+                  fontSize: '13px',
+                  color: '#374151',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '8px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '6px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <span style={{ fontSize: '16px' }}>
+                      {localCapabilities.pythonAvailable ? '✓' : '✗'}
+                    </span>
+                    <span style={{
+                      color: localCapabilities.pythonAvailable ? '#059669' : '#dc2626',
+                      fontWeight: '500'
+                    }}>
+                      Python {localCapabilities.pythonAvailable ? `(${localCapabilities.pythonVersion})` : 'nicht installiert'}
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>{localCapabilities.whisperInstalled ? '✅' : '❌'}</span>
-                    <span>faster-whisper {localCapabilities.whisperInstalled ? 'installiert' : 'nicht installiert'}</span>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '8px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '6px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <span style={{ fontSize: '16px' }}>
+                      {localCapabilities.whisperInstalled ? '✓' : '✗'}
+                    </span>
+                    <span style={{
+                      color: localCapabilities.whisperInstalled ? '#059669' : '#dc2626',
+                      fontWeight: '500'
+                    }}>
+                      faster-whisper {localCapabilities.whisperInstalled ? 'installiert' : 'nicht installiert'}
+                    </span>
                   </div>
                   {localCapabilities.whisperInstalled && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>{localCapabilities.gpuAvailable ? '🚀' : '💻'}</span>
-                      <span>{localCapabilities.gpuAvailable ? `GPU: ${localCapabilities.gpuName}` : 'GPU: Nicht verfügbar (CPU-Modus)'}</span>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '8px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '6px',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <span style={{ fontSize: '16px' }}>
+                        {localCapabilities.gpuAvailable ? '🚀' : '💻'}
+                      </span>
+                      <span style={{
+                        color: '#374151',
+                        fontWeight: '500'
+                      }}>
+                        {localCapabilities.gpuAvailable ? `GPU: ${localCapabilities.gpuName}` : 'GPU: Nicht verfügbar (CPU-Modus)'}
+                      </span>
                     </div>
                   )}
                 </div>
                 {!localCapabilities.pythonAvailable && (
-                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#fca5a5' }}>
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '10px',
+                    fontSize: '12px',
+                    color: '#dc2626',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '6px',
+                  }}>
                     ⚠️ Python 3.8+ wird benötigt für lokale Transkription
                   </div>
                 )}
                 {localCapabilities.pythonAvailable && !localCapabilities.whisperInstalled && (
-                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#fca5a5' }}>
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '10px',
+                    fontSize: '12px',
+                    color: '#dc2626',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '6px',
+                  }}>
                     ⚠️ Führe aus: pip install faster-whisper
                   </div>
                 )}
@@ -317,8 +566,14 @@ export default function SettingsPage() {
             )}
 
             {/* Mode Selection */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '14px', color: '#ffffff', marginBottom: '8px', display: 'block' }}>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                fontSize: '13px',
+                color: '#374151',
+                marginBottom: '8px',
+                display: 'block',
+                fontWeight: '500',
+              }}>
                 Transkriptions-Modus
               </label>
               <select
@@ -327,18 +582,24 @@ export default function SettingsPage() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  backgroundColor: '#0a0a0a',
-                  color: '#ffffff',
-                  border: '1px solid #1e293b',
+                  backgroundColor: '#ffffff',
+                  color: '#111827',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
                   fontSize: '14px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  outline: 'none',
                 }}
               >
                 <option value="auto">🔄 Auto (Lokal → Cloud Fallback)</option>
                 <option value="local">💻 Nur Lokal (faster-whisper)</option>
                 <option value="cloud">☁️ Nur Cloud (OpenAI API)</option>
               </select>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+              <div style={{
+                fontSize: '12px',
+                color: '#6b7280',
+                marginTop: '6px',
+              }}>
                 {formData.transcriptionMode === 'auto' && 'Versucht zuerst lokale Transkription, fällt bei Fehler auf Cloud zurück'}
                 {formData.transcriptionMode === 'local' && 'Offline-Modus: Funktioniert ohne Internet, benötigt Python + faster-whisper'}
                 {formData.transcriptionMode === 'cloud' && 'Online-Modus: Nutzt OpenAI API (benötigt API-Key)'}
@@ -347,8 +608,14 @@ export default function SettingsPage() {
 
             {/* Model Selection (only if local or auto) */}
             {(formData.transcriptionMode === 'local' || formData.transcriptionMode === 'auto') && (
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '14px', color: '#ffffff', marginBottom: '8px', display: 'block' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  fontSize: '13px',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  display: 'block',
+                  fontWeight: '500',
+                }}>
                   Lokales Modell
                 </label>
                 <select
@@ -357,11 +624,13 @@ export default function SettingsPage() {
                   style={{
                     width: '100%',
                     padding: '12px',
-                    backgroundColor: '#0a0a0a',
-                    color: '#ffffff',
-                    border: '1px solid #1e293b',
+                    backgroundColor: '#ffffff',
+                    color: '#111827',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
                     fontSize: '14px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    outline: 'none',
                   }}
                 >
                   <option value="tiny">Tiny (~75MB) - Sehr schnell</option>
@@ -370,7 +639,11 @@ export default function SettingsPage() {
                   <option value="medium">Medium (~1.5GB) - Empfohlen ⭐</option>
                   <option value="large">Large (~3GB) - Beste Qualität</option>
                 </select>
-                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                <div style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  marginTop: '6px',
+                }}>
                   Modell wird beim ersten Start automatisch heruntergeladen
                 </div>
               </div>
@@ -379,11 +652,28 @@ export default function SettingsPage() {
             {/* CPU Threads */}
             {(formData.transcriptionMode === 'local' || formData.transcriptionMode === 'auto') && !localCapabilities?.gpuAvailable && (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <label style={{ fontSize: '14px', color: '#ffffff' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '12px'
+                }}>
+                  <label style={{
+                    fontSize: '13px',
+                    color: '#374151',
+                    fontWeight: '500',
+                  }}>
                     CPU Threads
                   </label>
-                  <span style={{ fontSize: '14px', color: '#94a3b8' }}>
+                  <span style={{
+                    fontSize: '14px',
+                    color: '#111827',
+                    fontWeight: '600',
+                    padding: '4px 10px',
+                    backgroundColor: '#f3f4f6',
+                    borderRadius: '6px',
+                    fontFamily: 'monospace',
+                  }}>
                     {formData.whisperCpuThreads}
                   </span>
                 </div>
@@ -394,9 +684,19 @@ export default function SettingsPage() {
                   step="1"
                   value={formData.whisperCpuThreads}
                   onChange={(e) => handleInputChange("whisperCpuThreads", parseInt(e.target.value))}
-                  style={{ width: '100%', height: '4px', backgroundColor: '#0a0a0a', cursor: 'pointer' }}
+                  style={{
+                    width: '100%',
+                    height: '6px',
+                    cursor: 'pointer',
+                  }}
                 />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  marginTop: '8px',
+                }}>
                   <span>1 Thread</span>
                   <span>16 Threads</span>
                 </div>
@@ -405,16 +705,43 @@ export default function SettingsPage() {
           </div>
 
           {/* Beep Volume */}
-          <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #1e293b', padding: '24px', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '16px' }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '28px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          }}>
+            <h2 style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '16px',
+            }}>
               Audio-Feedback
             </h2>
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <label style={{ fontSize: '14px', color: '#ffffff' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '12px'
+              }}>
+                <label style={{
+                  fontSize: '14px',
+                  color: '#374151',
+                }}>
                   Beep-Lautstärke
                 </label>
-                <span style={{ fontSize: '14px', color: '#94a3b8' }}>
+                <span style={{
+                  fontSize: '14px',
+                  color: '#111827',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: '6px',
+                  fontFamily: 'monospace',
+                }}>
                   {formData.beepVolume}%
                 </span>
               </div>
@@ -425,9 +752,19 @@ export default function SettingsPage() {
                 step="5"
                 value={formData.beepVolume}
                 onChange={(e) => handleInputChange("beepVolume", parseInt(e.target.value))}
-                style={{ width: '100%', height: '4px', backgroundColor: '#0a0a0a', cursor: 'pointer' }}
+                style={{
+                  width: '100%',
+                  height: '6px',
+                  cursor: 'pointer',
+                }}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '12px',
+                color: '#6b7280',
+                marginTop: '8px',
+              }}>
                 <span>Stumm (0%)</span>
                 <span>Max (100%)</span>
               </div>
@@ -435,17 +772,28 @@ export default function SettingsPage() {
           </div>
 
           {/* Submit Buttons */}
-          <div style={{ display: 'flex', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '12px' }}>
             <button
               type="button"
               onClick={() => router.push("/")}
-              style={{ 
-                padding: '12px 24px', 
-                backgroundColor: '#1a1a1a', 
-                color: '#94a3b8', 
-                border: '1px solid #1e293b', 
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#ffffff',
+                color: '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '14px'
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f9fafb';
+                e.currentTarget.style.borderColor = '#9ca3af';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.borderColor = '#d1d5db';
               }}
             >
               Abbrechen
@@ -453,16 +801,27 @@ export default function SettingsPage() {
             <button
               type="submit"
               disabled={isSaving}
-              style={{ 
+              style={{
                 flex: 1,
-                padding: '12px 24px', 
-                backgroundColor: '#ffffff', 
-                color: '#0a0a0a', 
-                border: 'none', 
+                padding: '12px 24px',
+                backgroundColor: isSaving ? '#9ca3af' : '#111827',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
                 cursor: isSaving ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
-                fontWeight: '500',
-                opacity: isSaving ? 0.5 : 1
+                fontWeight: '600',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (!isSaving) {
+                  e.currentTarget.style.backgroundColor = '#1f2937';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSaving) {
+                  e.currentTarget.style.backgroundColor = '#111827';
+                }
               }}
             >
               {isSaving ? "Speichert..." : "Einstellungen speichern"}

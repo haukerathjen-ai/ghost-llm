@@ -67,186 +67,158 @@ export default function DashboardPage() {
   const currentPhase = getPipelinePhase();
 
   return (
-    <div className="cyber-grid" style={{ minHeight: '100vh', backgroundColor: '#0a0a14', color: '#ffffff', position: 'relative' }}>
-      {/* Error Toast (Cyberpunk Style) */}
+    <div style={{ minHeight: '100vh', backgroundColor: '#fafafa', color: '#111827', position: 'relative' }}>
+      {/* Error Toast */}
       {errorMessage && (
-        <div 
+        <div
           onClick={clearError}
-          style={{ 
+          style={{
             position: 'fixed',
             top: '20px',
             right: '20px',
-            background: 'linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)',
-            color: '#ffffff',
+            backgroundColor: '#ffffff',
+            color: '#dc2626',
             padding: '16px 20px',
-            borderRadius: '8px',
-            border: '2px solid #ff0000',
-            boxShadow: '0 0 20px #ff000088, 0 4px 12px rgba(0,0,0,0.3)',
+            borderRadius: '12px',
+            border: '1px solid #fecaca',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             zIndex: 1000,
             maxWidth: '400px',
             cursor: 'pointer',
-            animation: 'slideIn 0.3s ease-out'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
             <span style={{ fontSize: '18px' }}>⚠️</span>
             <div>
-              <div style={{ fontWeight: '600', marginBottom: '4px', textShadow: '0 0 10px #ff0000' }}>Fehler</div>
-              <div style={{ fontSize: '13px', opacity: 0.9 }}>{errorMessage}</div>
-              <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '8px' }}>Klicken zum Schließen</div>
+              <div style={{ fontWeight: '600', marginBottom: '4px', color: '#dc2626' }}>Fehler</div>
+              <div style={{ fontSize: '13px', color: '#991b1b' }}>{errorMessage}</div>
+              <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>Klicken zum Schließen</div>
             </div>
           </div>
         </div>
       )}
 
       {/* Centered Container */}
-      <div style={{ maxWidth: '768px', margin: '0 auto', padding: '80px 24px' }}>
-        {/* Header - Cyberpunk Style */}
-        <header style={{ marginBottom: '64px', position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <h1 style={{ 
-              fontSize: '42px', 
-              fontWeight: 'bold', 
-              background: 'linear-gradient(135deg, #00f0ff 0%, #ff00ff 50%, #00f0ff 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '0 0 30px #00f0ff88',
-              letterSpacing: '2px',
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '60px 24px' }}>
+        {/* Header */}
+        <header style={{ marginBottom: '48px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <h1 style={{
+              fontSize: '32px',
+              fontWeight: '700',
+              color: '#111827',
+              letterSpacing: '-0.025em',
             }}>
-              GHOST LLM
+              Ghost LLM
             </h1>
-            <Link 
+            <Link
               href="/settings"
-              style={{ 
-                padding: '10px', 
-                color: '#00f0ff',
-                border: '2px solid #00f0ff33',
+              style={{
+                padding: '10px',
+                color: '#6b7280',
+                border: '1px solid #d1d5db',
                 borderRadius: '8px',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                backgroundColor: '#ffffff',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#00f0ff';
-                e.currentTarget.style.boxShadow = '0 0 15px #00f0ff88';
-                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.backgroundColor = '#f9fafb';
+                e.currentTarget.style.borderColor = '#9ca3af';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#00f0ff33';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.borderColor = '#d1d5db';
               }}
             >
-              <Settings style={{ width: '20px', height: '20px', filter: 'drop-shadow(0 0 5px #00f0ff)' }} />
+              <Settings style={{ width: '20px', height: '20px' }} />
             </Link>
           </div>
-          <p style={{ 
-            fontSize: '13px', 
-            color: '#00f0ff', 
-            fontFamily: 'monospace',
-            letterSpacing: '1px',
-            textShadow: '0 0 10px #00f0ff88',
+          <p style={{
+            fontSize: '15px',
+            color: '#6b7280',
           }}>
-            &gt; Designed by Human | Developed by AI
+            Designed by Human | Developed by AI
           </p>
         </header>
 
-        {/* API Keys Warning - Cyberpunk Style */}
+        {/* API Keys Warning */}
         {apiKeysOk === false && (
-          <div style={{ 
-            background: 'linear-gradient(135deg, #ef444420 0%, #7f1d1d20 100%)',
-            border: '2px solid #ff00ff', 
-            padding: '16px', 
+          <div style={{
+            backgroundColor: '#fef2f2',
+            border: '1px solid #fecaca',
+            padding: '16px',
             marginBottom: '24px',
-            borderRadius: '8px',
-            boxShadow: '0 0 20px #ff00ff44, inset 0 0 20px #ff00ff11',
+            borderRadius: '12px',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '12px'
           }}>
             <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>
             <div>
-              <div style={{ fontSize: '14px', color: '#ff00ff', fontWeight: '600', marginBottom: '4px', textShadow: '0 0 10px #ff00ff' }}>
+              <div style={{ fontSize: '14px', color: '#dc2626', fontWeight: '600', marginBottom: '4px' }}>
                 API-Keys in .env fehlen!
               </div>
-              <div style={{ fontSize: '12px', color: '#fca5a5', fontFamily: 'monospace' }}>
+              <div style={{ fontSize: '13px', color: '#991b1b' }}>
                 Fügen Sie OPENAI_API_KEY und ANTHROPIC_API_KEY in die .env-Datei ein und starten Sie die App neu.
               </div>
             </div>
           </div>
         )}
 
-        {/* Status Section - Cyberpunk Card */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-          border: '2px solid #00f0ff44', 
+        {/* Status Section */}
+        <div style={{
+          backgroundColor: '#ffffff',
           borderRadius: '12px',
-          padding: '28px', 
-          marginBottom: '24px',
-          boxShadow: '0 0 30px #00f0ff22, inset 0 0 30px #00f0ff11',
-          position: 'relative',
-          overflow: 'hidden',
+          padding: '24px',
+          marginBottom: '20px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         }}>
-          {/* Corner Accents */}
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '40px', height: '40px', borderTop: '3px solid #00f0ff', borderLeft: '3px solid #00f0ff' }} />
-          <div style={{ position: 'absolute', top: 0, right: 0, width: '40px', height: '40px', borderTop: '3px solid #ff00ff', borderRight: '3px solid #ff00ff' }} />
-          
-          <h2 style={{ 
-            fontSize: '11px', 
-            textTransform: 'uppercase', 
-            letterSpacing: '2px', 
-            color: '#00f0ff', 
-            marginBottom: '20px',
-            fontFamily: 'monospace',
-            textShadow: '0 0 10px #00f0ff',
+          <h2 style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#111827',
+            marginBottom: '16px',
           }}>
-            &gt; STATUS
+            Status
           </h2>
           <StatusIndicator status={status} size="medium" />
-          
-          {/* Pipeline Progress (Visual Feedback) */}
+
+          {/* Pipeline Progress */}
           {currentPhase !== 'idle' && (
-            <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #00f0ff22' }}>
-              <div style={{ 
-                fontSize: '10px', 
-                color: '#00f0ff', 
-                marginBottom: '16px', 
-                textTransform: 'uppercase', 
-                letterSpacing: '2px',
-                fontFamily: 'monospace',
-                textShadow: '0 0 5px #00f0ff',
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e5e7eb' }}>
+              <div style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#111827',
+                marginBottom: '12px',
               }}>
-                &gt; PIPELINE-STATUS
+                Pipeline-Status
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {pipelinePhases.map((phase, index) => {
                   const isActive = phase === currentPhase;
                   const isPast = pipelinePhases.indexOf(currentPhase) > index;
                   return (
-                    <div key={phase} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div key={phase} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <div style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '36px',
+                        height: '36px',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '16px',
-                        background: isActive 
-                          ? 'linear-gradient(135deg, #00f0ff 0%, #ff00ff 100%)'
-                          : isPast 
-                          ? 'linear-gradient(135deg, #00ff41 0%, #00f0ff 100%)'
-                          : '#1e293b',
-                        border: isActive ? '2px solid #00f0ff' : isPast ? '2px solid #00ff41' : '2px solid #1e293b',
-                        color: isActive || isPast ? '#ffffff' : '#64748b',
+                        backgroundColor: isActive
+                          ? '#111827'
+                          : isPast
+                          ? '#10b981'
+                          : '#f3f4f6',
+                        color: isActive || isPast ? '#ffffff' : '#9ca3af',
                         transition: 'all 0.3s ease',
-                        boxShadow: isActive 
-                          ? '0 0 20px #00f0ff, 0 0 30px #ff00ff'
-                          : isPast 
-                          ? '0 0 15px #00ff41'
-                          : 'none',
-                        animation: isActive ? 'neonPulse 1.5s ease-in-out infinite' : 'none',
+                        border: `2px solid ${isActive ? '#111827' : isPast ? '#10b981' : '#e5e7eb'}`,
                       }}>
                         {phase === 'recording' && '🎙️'}
                         {phase === 'transcribing' && '🎤'}
@@ -255,145 +227,111 @@ export default function DashboardPage() {
                       </div>
                       {index < pipelinePhases.length - 1 && (
                         <div style={{
-                          width: '24px',
-                          height: '3px',
-                          background: isPast 
-                            ? 'linear-gradient(90deg, #00ff41 0%, #00f0ff 100%)'
-                            : '#1e293b',
+                          width: '20px',
+                          height: '2px',
+                          backgroundColor: isPast ? '#10b981' : '#e5e7eb',
                           transition: 'background 0.3s ease',
-                          boxShadow: isPast ? '0 0 10px #00ff41' : 'none',
                         }} />
                       )}
                     </div>
                   );
                 })}
               </div>
-              <div style={{ marginTop: '16px', fontSize: '13px', color: '#00f0ff', fontFamily: 'monospace', textShadow: '0 0 5px #00f0ff88' }}>
-                {pipelineStatus?.message || '&gt; Verarbeite...'}
+              <div style={{ marginTop: '12px', fontSize: '13px', color: '#6b7280' }}>
+                {pipelineStatus?.message || 'Verarbeite...'}
               </div>
             </div>
           )}
-          
-          <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #00f0ff22' }}>
-            <p style={{ fontSize: '14px', color: '#94a3b8', fontFamily: 'monospace' }}>
-              &gt; {statusMessage}
+
+          <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e5e7eb' }}>
+            <p style={{ fontSize: '14px', color: '#6b7280' }}>
+              {statusMessage}
             </p>
             {/* Emergency Stop Hint */}
             {currentPhase === 'typing' && (
-              <p style={{ fontSize: '12px', color: '#f59e0b', marginTop: '12px', fontFamily: 'monospace', textShadow: '0 0 5px #f59e0b' }}>
-                💡 Tipp: Drücke <strong style={{ color: '#ff00ff', textShadow: '0 0 10px #ff00ff' }}>F10</strong> zum Abbrechen (Emergency Stop)
+              <p style={{ fontSize: '12px', color: '#f59e0b', marginTop: '12px' }}>
+                💡 Tipp: Drücke <strong style={{ color: '#111827' }}>F10</strong> zum Abbrechen (Emergency Stop)
               </p>
             )}
           </div>
         </div>
 
-        {/* Recording Control - Cyberpunk Card */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-          border: '2px solid #ff00ff44', 
+        {/* Recording Control */}
+        <div style={{
+          backgroundColor: '#ffffff',
           borderRadius: '12px',
-          padding: '32px', 
-          marginBottom: '24px',
-          boxShadow: '0 0 30px #ff00ff22, inset 0 0 30px #ff00ff11',
-          position: 'relative',
-          overflow: 'hidden',
+          padding: '32px',
+          marginBottom: '20px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         }}>
-          {/* Corner Accents */}
-          <div style={{ position: 'absolute', bottom: 0, left: 0, width: '40px', height: '40px', borderBottom: '3px solid #ff00ff', borderLeft: '3px solid #ff00ff' }} />
-          <div style={{ position: 'absolute', bottom: 0, right: 0, width: '40px', height: '40px', borderBottom: '3px solid #00f0ff', borderRight: '3px solid #00f0ff' }} />
-          
-          <h2 style={{ 
-            fontSize: '11px', 
-            textTransform: 'uppercase', 
-            letterSpacing: '2px', 
-            color: '#ff00ff', 
-            marginBottom: '24px',
+          <h2 style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#111827',
+            marginBottom: '20px',
             textAlign: 'center',
-            fontFamily: 'monospace',
-            textShadow: '0 0 10px #ff00ff',
           }}>
-            &gt; AUFNAHME
+            Aufnahme
           </h2>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <RecordingButton 
-              isRecording={isRecording} 
-              onToggle={isRecording ? stopRecording : startRecording} 
+            <RecordingButton
+              isRecording={isRecording}
+              onToggle={isRecording ? stopRecording : startRecording}
             />
           </div>
         </div>
 
-        {/* Activity Log - Cyberpunk Card */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-          border: '2px solid #00ff4144', 
+        {/* Activity Log */}
+        <div style={{
+          backgroundColor: '#ffffff',
           borderRadius: '12px',
-          padding: '28px',
-          boxShadow: '0 0 30px #00ff4122, inset 0 0 30px #00ff4111',
-          position: 'relative',
-          overflow: 'hidden',
+          padding: '24px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         }}>
-          {/* Scanline effect */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '100%',
-            background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, #00f0ff05 2px, #00f0ff05 4px)',
-            pointerEvents: 'none',
-          }} />
-          
-          <div style={{ marginBottom: '20px', position: 'relative' }}>
-            <h2 style={{ 
-              fontSize: '11px', 
-              textTransform: 'uppercase', 
-              letterSpacing: '2px', 
-              color: '#00ff41',
-              fontFamily: 'monospace',
-              textShadow: '0 0 10px #00ff41',
+          <div style={{ marginBottom: '16px' }}>
+            <h2 style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#111827',
             }}>
-              &gt; AKTIVITÄTS-LOG
+              Aktivitäts-Log
             </h2>
           </div>
-          
-          {/* Activity List - Show last 5 entries, newest first */}
-          <div style={{ position: 'relative' }}>
+
+          {/* Activity List */}
+          <div>
             {activityLog.length === 0 ? (
-              <div style={{ 
-                fontSize: '13px', 
-                color: '#64748b', 
-                padding: '32px 0', 
+              <div style={{
+                fontSize: '13px',
+                color: '#9ca3af',
+                padding: '32px 0',
                 textAlign: 'center',
-                fontFamily: 'monospace',
               }}>
-                &gt; Keine Aktivität
+                Keine Aktivität
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {activityLog.map((entry, index) => (
-                  <div 
-                    key={index} 
-                    style={{ 
-                      fontSize: '13px', 
-                      color: '#94a3b8',
-                      fontFamily: 'monospace',
-                      padding: '8px 12px',
-                      background: '#00f0ff08',
-                      border: '1px solid #00f0ff22',
-                      borderRadius: '4px',
-                      transition: 'all 0.3s ease',
+                  <div
+                    key={index}
+                    style={{
+                      fontSize: '13px',
+                      color: '#374151',
+                      padding: '10px 12px',
+                      backgroundColor: '#f9fafb',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      transition: 'all 0.2s ease',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#00f0ff';
-                      e.currentTarget.style.boxShadow = '0 0 10px #00f0ff44';
+                      e.currentTarget.style.backgroundColor = '#f3f4f6';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#00f0ff22';
-                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
                     }}
                   >
-                    <span style={{ color: '#00f0ff', textShadow: '0 0 5px #00f0ff' }}>[{formatTime(entry.timestamp)}]</span>
-                    {' - '}
+                    <span style={{ color: '#6b7280', fontFamily: 'monospace', fontSize: '12px' }}>[{formatTime(entry.timestamp)}]</span>
+                    {' '}
                     <span>{entry.action}</span>
                   </div>
                 ))}
